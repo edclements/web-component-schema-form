@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous">
+
+    <template id="form-template">
+      <form>
+      </form>
+    </template>
+
+    <template id="schema-form-field">
+      <div class="form-group">
+        <label></label>
+        <input type="text" class="form-control">
+        <small class="form-text text-muted"></small>
+        <div class="invalid-feedback"></div>
+      </div>
+    </template>
+
+    <template id="schema-form-submit">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </template>
+
+    <style type="text/css" media="screen">
+        #editor { 
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md">
+          <schema-form></schema-form>
+        </div>
+        <div class="col-md">
+          <div id="editor"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="./schema-form.js"></script>
+    <script src="./ace.js"></script>
+    <script src="./node_modules/ajv/dist/ajv.min.js"></script>
+    <script>
+        var editor = ace.edit("editor");
+        editor.setOptions({maxLines: 100});
+        editor.session.setMode("ace/mode/javascript");
+        const json = {
+          "type": "object",
+          "title": "Comment",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "email": {
+              "title": "Email",
+              "type": "string",
+              "pattern": "^\\S+@\\S+$",
+              "description": "Email will be used for evil."
+            },
+            "comment": {
+              "title": "Comment",
+              "type": "string",
+              "maxLength": 20,
+              "validationMessage": "Don't be greedy!"
+            }
+          },
+          "required": [
+            "name",
+            "email",
+            "comment"
+          ]
+        };
+        editor.setValue(JSON.stringify(json, null, '\t'));
+        function update() {
+          const schemaForm = document.querySelector('schema-form');
+          schemaForm.schema = JSON.parse(editor.getSession().getValue());
+        }
+        editor.getSession().on('change', function() {
+          update();
+        });
+        update();
+    </script>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous">
+    </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous">
+    </script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous">
+    </script>
+  </body>
+</html>
