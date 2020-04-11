@@ -16,11 +16,6 @@ class SchemaFormSelectField extends HTMLElement {
         this.selectElement = this.querySelector('select');
     }
 
-    onInput(event) {
-        this.querySelector('.invalid-feedback').innerHTML = '';
-        this.inputElement.classList.remove('is-invalid');
-    }
-
     static get observedAttributes() {
         return ['title', 'help', 'type'];
     }
@@ -74,8 +69,8 @@ class SchemaFormSelectField extends HTMLElement {
         if (this.options) {
             this.options.forEach((map) => {
                 const option = document.createElement('option');
-                option.innerHTML = map.name
-                this.selectElement.appendChild(option)
+                option.innerHTML = map.name;
+                this.selectElement.appendChild(option);
             });
         }
     }

@@ -40,13 +40,13 @@ export class SchemaForm extends HTMLElement {
         const schemaToFormType = {
             string: 'text',
             integer: 'number'
-        }
+        };
         const schemaToFormElement = {
             'string': 'schema-form-field',
             'integer': 'schema-form-field',
             'array-with-enum': 'schema-form-checkboxes',
             'enum': 'schema-form-select-field'
-        }
+        };
         fieldProperties.element = schemaToFormElement[properties.type];
         if (properties.type == 'array' && properties.items.enum) {
             fieldProperties.element = schemaToFormElement['array-with-enum'];

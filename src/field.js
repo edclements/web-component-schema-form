@@ -17,7 +17,7 @@ class SchemaFormField extends HTMLElement {
         this.inputElement.addEventListener('input', this.onInput.bind(this));
     }
 
-    onInput(event) {
+    onInput() {
         this.querySelector('.invalid-feedback').innerHTML = '';
         this.inputElement.classList.remove('is-invalid');
     }
