@@ -8,7 +8,7 @@ template.innerHTML = `
 </div>
 `;
 
-class SchemaFormField extends HTMLElement {
+export class SchemaFormField extends HTMLElement {
 
     connectedCallback() {
         const node = document.importNode(template.content, true);

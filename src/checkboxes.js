@@ -1,3 +1,5 @@
+import {SchemaFormField} from './field.js';
+
 const template = document.createElement('template');
 template.innerHTML = `
 <div class="form-group">
@@ -17,48 +19,12 @@ checkboxTemplate.innerHTML = `
 </div>
 `;
 
-class SchemaFormCheckboxes extends HTMLElement {
+class SchemaFormCheckboxes extends SchemaFormField {
 
     connectedCallback() {
         const node = document.importNode(template.content, true);
         this.appendChild(node);
         this.selectElement = this.querySelector('select');
-    }
-
-    static get observedAttributes() {
-        return ['title', 'help', 'type'];
-    }
-
-    get title() {
-        return this.getAttribute('title');
-    }
-
-    set title(value) {
-        this.setAttribute('title', value);
-    }
-
-    get help() {
-        return this.getAttribute('help');
-    }
-
-    set help(value) {
-        this.setAttribute('help', value);
-    }
-
-    get type() {
-        return this.getAttribute('type');
-    }
-
-    set type(value) {
-        this.setAttribute('type', value);
-    }
-
-    get key() {
-        return this._key;
-    }
-
-    set key(value) {
-        this._key = value;
     }
 
     get options() {
@@ -79,12 +45,6 @@ class SchemaFormCheckboxes extends HTMLElement {
         }
     }
 
-    attributeChangedCallback() {
-        if (this.querySelector('label') && this.title)
-            this.querySelector('label').innerHTML = this.title;
-        if (this.querySelector('small') && this.help)
-            this.querySelector('small').innerHTML = this.help;
-    }
 }
 
 window.customElements.define('schema-form-checkboxes', SchemaFormCheckboxes);
