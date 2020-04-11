@@ -1,6 +1,7 @@
 import './field.js';
 import './select.js';
 import './checkboxes.js';
+import './radios.js';
 import './submit.js';
 
 const template = document.createElement('template');
@@ -57,6 +58,7 @@ export class SchemaForm extends HTMLElement {
             fieldProperties.enum = properties.enum;
         }
         fieldProperties.type = schemaToFormType[properties.type];
+        if (properties.element) fieldProperties.element = properties.element;
         this.addFieldElement(fieldProperties);
     }
 
