@@ -4,10 +4,10 @@ template.innerHTML = `
 `;
 
 export class SchemaFormSubmit extends HTMLElement {
-  connectedCallback() {
-    const node = document.importNode(template.content, true);
-    this.appendChild(node);
-  }
+    connectedCallback() {
+        const node = document.importNode(template.content, true);
+        this.appendChild(node);
+    }
 }
 
 window.customElements.define('schema-form-submit', SchemaFormSubmit);
