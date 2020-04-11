@@ -63,11 +63,21 @@ class SchemaFormSelectField extends HTMLElement {
 
   set enum(value) {
     this._enum = value;
-    this.enum.forEach((optionKey) => {
-      const option = document.createElement('option');
-      option.innerHTML = optionKey;
-      this.selectElement.appendChild(option)
-    });
+  }
+
+  get options() {
+    return this._options;
+  }
+
+  set options(value) {
+    this._options = value;
+    if (this.options) {
+      this.options.forEach((map) => {
+        const option = document.createElement('option');
+        option.innerHTML = map.name
+        this.selectElement.appendChild(option)
+      });
+    }
   }
 
   attributeChangedCallback() {

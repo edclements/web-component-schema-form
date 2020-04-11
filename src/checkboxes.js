@@ -61,20 +61,22 @@ class SchemaFormCheckboxes extends HTMLElement {
     this._key = value;
   }
 
-  get enum() {
-    return this._enum;
+  get options() {
+    return this._options;
   }
 
-  set enum(value) {
-    this._enum = value;
-    let previous = this.querySelector('label');
-    this.enum.forEach((optionKey) => {
-      const checkbox = document.importNode(checkboxTemplate.content, true);
-      checkbox.name = this.key;
-      checkbox.querySelector('span').innerHTML = optionKey;
-      previous.after(checkbox);
-      previous = previous.nextElementSibling;
-    });
+  set options(value) {
+    this._options = value;
+    if (this.options) {
+      let previous = this.querySelector('label');
+      this.options.forEach((map) => {
+        const checkbox = document.importNode(checkboxTemplate.content, true);
+        checkbox.name = this.key;
+        checkbox.querySelector('span').innerHTML = map.name;
+        previous.after(checkbox);
+        previous = previous.nextElementSibling;
+      });
+    }
   }
 
   attributeChangedCallback() {

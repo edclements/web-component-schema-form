@@ -34,7 +34,8 @@ export class SchemaForm extends HTMLElement {
     const fieldProperties = {
       key: key,
       title: properties.title || key,
-      description: properties.description
+      description: properties.description,
+      titleMap: properties.titleMap
     };
     const schemaToFormType = {
       string: 'text',
@@ -59,6 +60,10 @@ export class SchemaForm extends HTMLElement {
     this.addFieldElement(fieldProperties);
   }
 
+  enumToTitleMap(fieldEnum) {
+    return fieldEnum.map(key => ({name: key, value: key}));
+  }
+
   addFieldElement(fieldProperties) {
     const formField = document.createElement(fieldProperties.element);
     this.formElement.appendChild(formField);
@@ -67,7 +72,11 @@ export class SchemaForm extends HTMLElement {
     if (fieldProperties.description)
       formField.setAttribute('description', fieldProperties.description);
     formField.setAttribute('type', fieldProperties.type);
-    formField.enum = fieldProperties.enum;
+    if (fieldProperties.titleMap) {
+      formField.options = fieldProperties.titleMap;
+    } else if (fieldProperties.enum) {
+      formField.options = this.enumToTitleMap(fieldProperties.enum);
+    }
   }
 
   get schema() {
