@@ -12,26 +12,8 @@
       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
       crossorigin="anonymous">
 
-    <template id="form-template">
-      <form>
-      </form>
-    </template>
-
-    <template id="schema-form-field">
-      <div class="form-group">
-        <label></label>
-        <input type="text" class="form-control">
-        <small class="form-text text-muted"></small>
-        <div class="invalid-feedback"></div>
-      </div>
-    </template>
-
-    <template id="schema-form-submit">
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </template>
-
     <style type="text/css" media="screen">
-        #editor { 
+        #editor {
             position: absolute;
             top: 0;
             right: 0;
@@ -52,7 +34,7 @@
       </div>
     </div>
 
-    <script type="text/javascript" src="./schema-form.js"></script>
+    <script type="module" src="./src/schema-form.js"></script>
     <script src="./ace.js"></script>
     <script src="./ajv.min.js"></script>
     <script>
@@ -86,6 +68,75 @@
             "comment"
           ]
         };
+        const titleMapJSON = {
+          "type": "object",
+          "properties": {
+            "select": {
+              "title": "Select without titleMap",
+              "type": "string",
+              "enum": [
+                "a",
+                "b",
+                "c"
+              ]
+            },
+            "select2": {
+              "title": "Select with titleMap (old style)",
+              "type": "string",
+              "enum": [
+                "a",
+                "b",
+                "c"
+              ]
+            },
+            "noenum": {
+              "type": "string",
+              "title": "No enum, but forms says it's a select"
+            },
+            "array": {
+              "title": "Array with enum defaults to 'checkboxes'",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b",
+                  "c"
+                ]
+              }
+            },
+            "array2": {
+              "title": "Array with titleMap",
+              "type": "array",
+              "default": [
+                "b",
+                "c"
+              ],
+              "items": {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b",
+                  "c"
+                ]
+              }
+            },
+            "radios": {
+              "title": "Basic radio button example",
+              "type": "string",
+              "enum": [
+                "a",
+                "b",
+                "c"
+              ]
+            },
+            "radiobuttons": {
+              "title": "Radio buttons used to switch a boolean",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        };
         editor.setValue(JSON.stringify(json, null, '\t'));
         function update() {
           const schemaForm = document.querySelector('schema-form');
@@ -94,7 +145,9 @@
         editor.getSession().on('change', function() {
           update();
         });
-        update();
+        document.addEventListener("DOMContentLoaded", function() {
+          update();
+        });
     </script>
     <script
       src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
