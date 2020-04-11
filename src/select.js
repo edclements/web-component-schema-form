@@ -28,12 +28,12 @@ class SchemaFormSelectField extends HTMLElement {
         this.setAttribute('title', value);
     }
 
-    get description() {
-        return this.getAttribute('description');
+    get help() {
+        return this.getAttribute('help');
     }
 
-    set description(value) {
-        this.setAttribute('description', value);
+    set help(value) {
+        this.setAttribute('help', value);
     }
 
     get type() {
@@ -78,8 +78,8 @@ class SchemaFormSelectField extends HTMLElement {
     attributeChangedCallback() {
         if (this.querySelector('label') && this.title)
             this.querySelector('label').innerHTML = this.title;
-        if (this.querySelector('small') && this.description)
-            this.querySelector('small').innerHTML = this.description;
+        if (this.querySelector('small') && this.help)
+            this.querySelector('small').innerHTML = this.help;
     }
 }
 

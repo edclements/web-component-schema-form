@@ -34,7 +34,7 @@ export class SchemaForm extends HTMLElement {
         const fieldProperties = {
             key: key,
             title: properties.title || key,
-            description: properties.description,
+            help: properties.description,
             titleMap: properties.titleMap
         };
         const schemaToFormType = {
@@ -69,8 +69,8 @@ export class SchemaForm extends HTMLElement {
         this.formElement.appendChild(formField);
         formField.key = fieldProperties.key;
         formField.setAttribute('title', fieldProperties.title);
-        if (fieldProperties.description)
-            formField.setAttribute('description', fieldProperties.description);
+        if (fieldProperties.help)
+            formField.setAttribute('help', fieldProperties.help);
         formField.setAttribute('type', fieldProperties.type);
         if (fieldProperties.titleMap) {
             formField.options = fieldProperties.titleMap;
