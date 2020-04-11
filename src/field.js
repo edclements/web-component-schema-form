@@ -20,6 +20,15 @@ export class SchemaFormField extends HTMLElement {
     onInput() {
         this.querySelector('.invalid-feedback').innerHTML = '';
         this.inputElement.classList.remove('is-invalid');
+        this.value = this.inputElement.value;
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(value) {
+        this._value = value;
     }
 
     static get observedAttributes() {

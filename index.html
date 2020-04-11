@@ -25,12 +25,18 @@
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="flex-container">
       <div class="row">
         <div class="col-md">
+          <h3>Model</h3>
+          <pre><code></code></pre>
+        </div>
+        <div class="col-md">
+          <h3>Generated Form</h3>
           <schema-form></schema-form>
         </div>
         <div class="col-md">
+          <h3>Schema</h3>
           <div id="editor"></div>
         </div>
       </div>
@@ -161,6 +167,11 @@
         });
         document.addEventListener("DOMContentLoaded", function() {
           update();
+          var form = document.querySelector('form');
+          form.addEventListener('change', function() {
+            const schemaForm = document.querySelector('schema-form');
+            document.querySelector('code').innerHTML = JSON.stringify(schemaForm.model);
+          });
         });
     </script>
     <script

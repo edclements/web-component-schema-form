@@ -24,7 +24,10 @@ class SchemaFormRadios extends SchemaFormField {
     connectedCallback() {
         const node = document.importNode(template.content, true);
         this.appendChild(node);
-        this.selectElement = this.querySelector('select');
+    }
+
+    onChange(event) {
+        this.value = event.target.value;
     }
 
     get options() {
@@ -41,6 +44,7 @@ class SchemaFormRadios extends SchemaFormField {
                 const input = radio.querySelector('input');
                 input.setAttribute('name', this.key);
                 input.setAttribute('value', map.value);
+                input.addEventListener('change', this.onChange.bind(this));
                 previous.after(radio);
                 previous = previous.nextElementSibling;
             });

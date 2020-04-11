@@ -16,6 +16,11 @@ export class SchemaFormSelectField extends SchemaFormField {
         const node = document.importNode(template.content, true);
         this.appendChild(node);
         this.selectElement = this.querySelector('select');
+        this.selectElement.addEventListener('change', this.onChange.bind(this));
+    }
+
+    onChange(event) {
+        this.value = event.target.value;
     }
 
     get options() {

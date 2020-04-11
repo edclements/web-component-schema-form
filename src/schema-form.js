@@ -139,16 +139,16 @@ export class SchemaForm extends HTMLElement {
     }
 
     get model() {
-        const fields = this.formElement.querySelectorAll('schema-form-field');
+        const fields = this.formElement.children;
         const model = {};
-        fields.forEach((element) => {
-            const input = element.querySelector('input');
-            if (input.value == '') {
+        for (let i = 0; i < fields.length; i++) {
+            const element = fields[i];
+            if (element.value == '') {
                 delete model[element.key];
             } else {
-                model[element.key] = input.value;
+                model[element.key] = element.value;
             }
-        });
+        }
         return model;
     }
 

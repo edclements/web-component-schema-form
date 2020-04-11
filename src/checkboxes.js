@@ -24,7 +24,14 @@ class SchemaFormCheckboxes extends SchemaFormField {
     connectedCallback() {
         const node = document.importNode(template.content, true);
         this.appendChild(node);
-        this.selectElement = this.querySelector('select');
+    }
+
+    onChange() {
+        const inputs = this.querySelectorAll('input');
+        this.value = [];
+        for (let i = 0; i < inputs.length; i++) {
+            if (inputs[i].checked) this.value.push(inputs[i].value);
+        }
     }
 
     get options() {
@@ -39,6 +46,10 @@ class SchemaFormCheckboxes extends SchemaFormField {
                 const checkbox = document.importNode(checkboxTemplate.content, true);
                 checkbox.name = this.key;
                 checkbox.querySelector('span').innerHTML = map.name;
+                const input = checkbox.querySelector('input');
+                input.setAttribute('name', this.key);
+                input.setAttribute('value', map.value);
+                input.addEventListener('change', this.onChange.bind(this));
                 previous.after(checkbox);
                 previous = previous.nextElementSibling;
             });
