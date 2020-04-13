@@ -48,7 +48,7 @@
     <script>
         var editor = ace.edit("editor");
         editor.setOptions({maxLines: 100});
-        editor.session.setMode("ace/mode/javascript");
+        editor.session.setMode("ace/mode/json");
         const json = {
           "type": "object",
           "title": "Comment",
@@ -194,7 +194,10 @@
         editor.clearSelection();
         function update() {
           const schemaForm = document.querySelector('schema-form');
-          schemaForm.schema = JSON.parse(editor.getSession().getValue());
+          try {
+            schemaForm.schema = JSON.parse(editor.getSession().getValue());
+          } catch(e) {
+          }
         }
         editor.getSession().on('change', function() {
           update();
