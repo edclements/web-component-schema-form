@@ -1,4 +1,5 @@
 import './field.js';
+import './textarea.js';
 import './select.js';
 import './checkboxes.js';
 import './radios.js';
@@ -40,11 +41,13 @@ export class SchemaForm extends HTMLElement {
             titleMap: properties.titleMap
         };
         const schemaToFormType = {
+            textarea: 'textarea',
             string: 'text',
             integer: 'number',
             number: 'number'
         };
         const schemaToFormElement = {
+            'textarea': 'schema-form-textarea',
             'string': 'schema-form-field',
             'integer': 'schema-form-field',
             'number': 'schema-form-field',
@@ -99,23 +102,57 @@ export class SchemaForm extends HTMLElement {
         this.buildForm();
     }
 
+    get form() {
+        return this._form;
+    }
+
+    set form(value) {
+        this._form = value;
+        this.clearForm();
+        this.buildForm();
+    }
+
     clearForm() {
         this.formElement.innerHTML = '';
     }
 
     buildForm() {
-        const keys = Object.keys(this.schema.properties);
-        keys.forEach((key) => {
-            const properties = this.schema.properties[key];
-            this.addField(key, properties);
-        });
-        this.addSubmit();
-        if (this.schema.dependencies) this.checkDependencies();
+        if (this.form) {
+            this.form.forEach((key) => {
+                if (typeof key == 'string') {
+                    const properties = this.schema.properties[key];
+                    if (properties) this.addField(key, properties);
+                } else if (typeof key == 'object') {
+                    if (key.type == 'submit') {
+                        this.addSubmit(key);
+                    } else {
+                        const properties = this.schema.properties[key.key];
+                        if (properties) {
+                            const fieldProperties = Object.assign({}, properties, key);
+                            this.addField(key.key, fieldProperties);
+                        }
+                    }
+                }
+            });
+        } else {
+            const keys = Object.keys(this.schema.properties);
+            keys.forEach((key) => {
+                const properties = this.schema.properties[key];
+                this.addField(key, properties);
+            });
+            this.addSubmit();
+            if (this.schema.dependencies) this.checkDependencies();
+        }
     }
 
-    addSubmit() {
+    addSubmit(properties) {
         const submit = document.createElement('schema-form-submit');
         this.formElement.appendChild(submit);
+        if (properties) {
+            const button = submit.querySelector('button');
+            if (properties.title) button.innerHTML = properties.title;
+            if (properties.style) button.classList.add(properties.style);
+        }
     }
 
     submit(event) {

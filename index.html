@@ -36,8 +36,10 @@
           <schema-form></schema-form>
         </div>
         <div class="col-md">
+          <h3>Form</h3>
+          <div id="form-editor"></div>
           <h3>Schema</h3>
-          <div id="editor"></div>
+          <div id="schema-editor"></div>
         </div>
       </div>
     </div>
@@ -46,9 +48,9 @@
     <script src="./ace.js"></script>
     <script src="./ajv.min.js"></script>
     <script>
-        var editor = ace.edit("editor");
-        editor.setOptions({maxLines: 100});
-        editor.session.setMode("ace/mode/json");
+        var schemaEditor = ace.edit("schema-editor");
+        schemaEditor.setOptions({maxLines: 100});
+        schemaEditor.session.setMode("ace/mode/json");
         const json = {
           "type": "object",
           "title": "Comment",
@@ -190,18 +192,40 @@
             }
           }
         }
-        editor.setValue(JSON.stringify(json, null, '\t'));
-        editor.clearSelection();
+        schemaEditor.setValue(JSON.stringify(json, null, '\t'));
+        schemaEditor.clearSelection();
+
+        var formEditor = ace.edit("form-editor");
+        formEditor.setOptions({maxLines: 100, minLines: 10});
+        formEditor.session.setMode("ace/mode/json");
+        const formJSON = [
+          "name",
+          "email",
+          {
+            "key": "comment",
+            "type": "textarea",
+            "placeholder": "Make a comment"
+          },
+          {
+            "type": "submit",
+            "style": "btn-info",
+            "title": "OK"
+          }
+        ];
+        formEditor.setValue(JSON.stringify(formJSON, null, '\t'));
+        formEditor.clearSelection();
+
         function update() {
           const schemaForm = document.querySelector('schema-form');
           try {
-            schemaForm.schema = JSON.parse(editor.getSession().getValue());
+            schemaForm.schema = JSON.parse(schemaEditor.getSession().getValue());
+            schemaForm.form = JSON.parse(formEditor.getSession().getValue());
           } catch(e) {
+            console.error(e);
           }
         }
-        editor.getSession().on('change', function() {
-          update();
-        });
+        schemaEditor.getSession().on('change', update);
+        formEditor.getSession().on('change', update);
         document.addEventListener("DOMContentLoaded", function() {
           update();
           var form = document.querySelector('form');
