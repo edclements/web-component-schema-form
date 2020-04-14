@@ -29,7 +29,7 @@ export class SchemaFormSelectField extends SchemaFormField {
 
     set options(value) {
         this._options = value;
-        if (this.options) {
+        if (this.options && this.options.forEach) {
             this.options.forEach((map) => {
                 const option = document.createElement('option');
                 option.innerHTML = map.name;

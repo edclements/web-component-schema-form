@@ -52,16 +52,21 @@ export class SchemaForm extends HTMLElement {
             'integer': 'schema-form-field',
             'number': 'schema-form-field',
             'array-with-enum': 'schema-form-checkboxes',
-            'enum': 'schema-form-select-field'
+            'enum': 'schema-form-select-field',
+            'select': 'schema-form-select-field',
+            'radios': 'schema-form-radios',
+            'radiobuttons': 'schema-form-radios'
         };
         fieldProperties.element = schemaToFormElement[properties.type];
-        if (properties.type == 'array' && properties.items.enum) {
-            fieldProperties.element = schemaToFormElement['array-with-enum'];
-            fieldProperties.enum = properties.items.enum;
-            fieldProperties.type = schemaToFormType[properties.items.type];
-        } else if (properties.enum) {
-            fieldProperties.element = schemaToFormElement['enum'];
-            fieldProperties.enum = properties.enum;
+        if (!fieldProperties.element) {
+            if (properties.type == 'array' && properties.items.enum) {
+                fieldProperties.element = schemaToFormElement['array-with-enum'];
+                fieldProperties.enum = properties.items.enum;
+                fieldProperties.type = schemaToFormType[properties.items.type];
+            } else if (properties.enum) {
+                fieldProperties.element = schemaToFormElement['enum'];
+                fieldProperties.enum = properties.enum;
+            }
         }
         fieldProperties.type = schemaToFormType[properties.type];
         if (properties.element) fieldProperties.element = properties.element;

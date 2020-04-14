@@ -36,6 +36,15 @@
           <schema-form></schema-form>
         </div>
         <div class="col-md">
+          <div class="form-group">
+            <label>Select Examples</label>
+            <select type="text" class="form-control" id="select-examples">
+              <option selected value="simple">Simple</option>
+              <option value="titlemap">TitleMap Examples</option>
+            </select>
+            <small class="form-text text-muted"></small>
+            <div class="invalid-feedback"></div>
+          </div>
           <h3>Form</h3>
           <div id="form-editor"></div>
           <h3>Schema</h3>
@@ -218,8 +227,12 @@
         function update() {
           const schemaForm = document.querySelector('schema-form');
           try {
-            schemaForm.schema = JSON.parse(schemaEditor.getSession().getValue());
-            schemaForm.form = JSON.parse(formEditor.getSession().getValue());
+            const schema = schemaEditor.getSession().getValue();
+            const form = formEditor.getSession().getValue();
+            if (schema != "" && form != "") {
+              schemaForm.schema = JSON.parse(schema);
+              schemaForm.form = JSON.parse(form);
+            }
           } catch(e) {
             console.error(e);
           }
@@ -233,6 +246,214 @@
             const schemaForm = document.querySelector('schema-form');
             document.querySelector('code').innerHTML = JSON.stringify(schemaForm.model);
           });
+        });
+
+        document.querySelector('#select-examples').addEventListener('change', (event) => {
+          switch(event.target.value) {
+            case 'simple':
+              const simpleSchemaJSON = {
+                "type": "object",
+                "title": "Comment",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "type": "string"
+                  },
+                  "email": {
+                    "title": "Email",
+                    "type": "string",
+                    "pattern": "^\\S+@\\S+$",
+                    "description": "Email will be used for evil."
+                  },
+                  "comment": {
+                    "title": "Comment",
+                    "type": "string",
+                    "maxLength": 20,
+                    "validationMessage": "Don't be greedy!"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "comment"
+                ]
+              }
+              schemaEditor.setValue(JSON.stringify(simpleSchemaJSON, null, '\t'));
+              schemaEditor.clearSelection();
+              const simpleFormJSON = [
+                "name",
+                "email",
+                {
+                  "key": "comment",
+                  "type": "textarea",
+                  "placeholder": "Make a comment"
+                },
+                {
+                  "type": "submit",
+                  "style": "btn-info",
+                  "title": "OK"
+                }
+              ]
+              formEditor.setValue(JSON.stringify(simpleFormJSON, null, '\t'));
+              formEditor.clearSelection();
+              break;
+            case 'titlemap':
+              titleMapSchemaJSON = {
+                "type": "object",
+                "properties": {
+                  "select": {
+                    "title": "Select without titleMap",
+                    "type": "string",
+                    "enum": [
+                      "a",
+                      "b",
+                      "c"
+                    ]
+                  },
+                  "select2": {
+                    "title": "Select with titleMap (old style)",
+                    "type": "string",
+                    "enum": [
+                      "a",
+                      "b",
+                      "c"
+                    ]
+                  },
+                  "noenum": {
+                    "type": "string",
+                    "title": "No enum, but forms says it's a select"
+                  },
+                  "array": {
+                    "title": "Array with enum defaults to 'checkboxes'",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c"
+                      ]
+                    }
+                  },
+                  "array2": {
+                    "title": "Array with titleMap",
+                    "type": "array",
+                    "default": [
+                      "b",
+                      "c"
+                    ],
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c"
+                      ]
+                    }
+                  },
+                  "radios": {
+                    "title": "Basic radio button example",
+                    "type": "string",
+                    "enum": [
+                      "a",
+                      "b",
+                      "c"
+                    ]
+                  },
+                  "radiobuttons": {
+                    "title": "Radio buttons used to switch a boolean",
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
+              schemaEditor.setValue(JSON.stringify(titleMapSchemaJSON, null, '\t'));
+              schemaEditor.clearSelection();
+              titleMapFormJSON = [
+                "select",
+                {
+                  "key": "select2",
+                  "type": "select",
+                  "titleMap": {
+                    "a": "A",
+                    "b": "B",
+                    "c": "C"
+                  }
+                },
+                {
+                  "key": "noenum",
+                  "type": "select",
+                  "titleMap": [
+                    {
+                      "value": "a",
+                      "name": "A"
+                    },
+                    {
+                      "value": "b",
+                      "name": "B"
+                    },
+                    {
+                      "value": "c",
+                      "name": "C"
+                    }
+                  ]
+                },
+                "array",
+                {
+                  "key": "array2",
+                  "type": "checkboxes",
+                  "titleMap": [
+                    {
+                      "value": "a",
+                      "name": "A"
+                    },
+                    {
+                      "value": "b",
+                      "name": "B"
+                    },
+                    {
+                      "value": "c",
+                      "name": "C"
+                    }
+                  ]
+                },
+                {
+                  "key": "radios",
+                  "type": "radios",
+                  "titleMap": [
+                    {
+                      "value": "c",
+                      "name": "C"
+                    },
+                    {
+                      "value": "b",
+                      "name": "B"
+                    },
+                    {
+                      "value": "a",
+                      "name": "A"
+                    }
+                  ]
+                },
+                {
+                  "key": "radiobuttons",
+                  "type": "radiobuttons",
+                  "titleMap": [
+                    {
+                      "value": false,
+                      "name": "No way"
+                    },
+                    {
+                      "value": true,
+                      "name": "OK"
+                    }
+                  ]
+                }
+              ]
+              formEditor.setValue(JSON.stringify(titleMapFormJSON, null, '\t'));
+              formEditor.clearSelection();
+              break;
+          }
         });
     </script>
     <script
