@@ -8,10 +8,28 @@
     "eslint": "^6.8.0",
     "http-server": "^0.12.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@babel/preset-env": "^7.9.5",
+    "babelify": "^10.0.0",
+    "browserify": "^16.5.1",
+    "jest": "^25.3.0",
+    "jest-environment-jsdom-sixteen": "^1.0.3",
+    "watchify": "^3.11.1",
+    "wzrd": "^1.5.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "browserify src/schema-form.js -o dist/schema-form.js -t [ babelify --presets [ @babel/preset-env ] ]",
+    "watch": "wzrd src/schema-form.js -- -t [ babelify --presets [ @babel/preset-env ] ]",
+    "test": "NODE_ENV=test jest"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "jest": {
+    "testEnvironment": "jest-environment-jsdom-sixteen",
+    "verbose": true,
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ]
+  }
 }

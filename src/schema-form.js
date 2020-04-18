@@ -1,3 +1,5 @@
+import Ajv from 'ajv';
+
 import './field.js';
 import './textarea.js';
 import './select.js';
@@ -63,7 +65,7 @@ export class SchemaForm extends HTMLElement {
             number: 'number'
         };
         fieldProperties.element = this.elementMap[properties.type];
-        fieldProperties.type = schemaToFormType[properties.type];
+        fieldProperties.type = schemaToFormType[properties.type] || properties.type;
         this.addFieldElement(fieldProperties, after, parent);
     }
 
@@ -90,7 +92,8 @@ export class SchemaForm extends HTMLElement {
             formField.options = fieldProperties.titleMap;
         } else if (fieldProperties.enum) {
             formField.options = this.enumToTitleMap(fieldProperties.enum);
-
+        } else if (fieldProperties.items && fieldProperties.items.enum) {
+            formField.options = this.enumToTitleMap(fieldProperties.items.enum);
         }
         if (fieldProperties.htmlClass) formField.htmlClass = fieldProperties.htmlClass;
         if (fieldProperties.helpvalue) formField.innerHTML = fieldProperties.helpvalue;
@@ -142,7 +145,7 @@ export class SchemaForm extends HTMLElement {
                 if (properties) {
                     if (properties.enum) {
                         properties.type = 'select';
-                    } else if (properties.array && properties.items.enum) {
+                    } else if (properties.type == 'array' && properties.items.enum) {
                         properties.type = 'checkboxes';
                     }
                     this.addField(key, properties, null, element);
@@ -170,10 +173,7 @@ export class SchemaForm extends HTMLElement {
             this.buildFormSection(this.form, this.formElement);
         } else {
             const keys = Object.keys(this.schema.properties);
-            keys.forEach((key) => {
-                const properties = this.schema.properties[key];
-                this.addField(key, properties);
-            });
+            this.buildFormSection(keys, this.formElement);
             this.addSubmit({}, this.formElement);
             if (this.schema.dependencies) this.checkDependencies();
         }
