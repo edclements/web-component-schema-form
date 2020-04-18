@@ -15,13 +15,12 @@ export class SchemaForm extends HTMLElement {
 
     constructor() {
         super();
-        this.schemaToFormElement = {
+        this.elementMap = {
             'textarea': 'schema-form-textarea',
             'string': 'schema-form-field',
             'integer': 'schema-form-field',
             'number': 'schema-form-field',
-            'array-with-enum': 'schema-form-checkboxes',
-            'enum': 'schema-form-select-field',
+            'checkboxes': 'schema-form-checkboxes',
             'select': 'schema-form-select-field',
             'radios': 'schema-form-radios',
             'radiobuttons': 'schema-form-radios',
@@ -30,7 +29,7 @@ export class SchemaForm extends HTMLElement {
     }
 
     mapElement(type, element) {
-        this.schemaToFormElement[type] = element;
+        this.elementMap[type] = element;
     }
 
     connectedCallback() {
@@ -55,34 +54,16 @@ export class SchemaForm extends HTMLElement {
     }
 
     addField(key, properties, after = null, parent = null) {
-        const fieldProperties = {
-            key: key,
-            title: properties.title || key,
-            help: properties.description,
-            titleMap: properties.titleMap,
-            htmlClass: properties.htmlClass
-        };
+        const fieldProperties = Object.assign({}, properties);
+        fieldProperties.title = fieldProperties.title || key;
         const schemaToFormType = {
             textarea: 'textarea',
             string: 'text',
             integer: 'number',
             number: 'number'
         };
-        fieldProperties.element = this.schemaToFormElement[properties.type];
-        if (!fieldProperties.element) {
-            if (properties.type == 'array' && properties.items.enum) {
-                fieldProperties.element = this.schemaToFormElement['array-with-enum'];
-                fieldProperties.enum = properties.items.enum;
-                fieldProperties.type = schemaToFormType[properties.items.type];
-            } else if (properties.enum) {
-                fieldProperties.element = this.schemaToFormElement['enum'];
-                fieldProperties.enum = properties.enum;
-            }
-        }
+        fieldProperties.element = this.elementMap[properties.type];
         fieldProperties.type = schemaToFormType[properties.type];
-        if (properties.element) fieldProperties.element = properties.element;
-        if (properties.htmlClass) fieldProperties.htmlClass = properties.htmlClass;
-        if (properties.helpvalue) fieldProperties.helpvalue = properties.helpvalue;
         this.addFieldElement(fieldProperties, after, parent);
     }
 
@@ -109,6 +90,7 @@ export class SchemaForm extends HTMLElement {
             formField.options = fieldProperties.titleMap;
         } else if (fieldProperties.enum) {
             formField.options = this.enumToTitleMap(fieldProperties.enum);
+
         }
         if (fieldProperties.htmlClass) formField.htmlClass = fieldProperties.htmlClass;
         if (fieldProperties.helpvalue) formField.innerHTML = fieldProperties.helpvalue;
@@ -153,7 +135,14 @@ export class SchemaForm extends HTMLElement {
         form.forEach((key) => {
             if (typeof key == 'string') {
                 const properties = this.schema.properties[key];
-                if (properties) this.addField(key, properties, null, element);
+                if (properties) {
+                    if (properties.enum) {
+                        properties.type = 'select';
+                    } else if (properties.array && properties.items.enum) {
+                        properties.type = 'checkboxes';
+                    }
+                    this.addField(key, properties, null, element);
+                }
             } else if (typeof key == 'object') {
                 if (key.type == 'submit') {
                     this.addSubmit(key, element);
