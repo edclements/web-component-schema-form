@@ -41,6 +41,7 @@
             <select type="text" class="form-control" id="select-examples">
               <option selected value="simple">Simple</option>
               <option value="titlemap">TitleMap Examples</option>
+              <option value="bootstrap-grid">Bootstrap Grid</option>
             </select>
             <small class="form-text text-muted"></small>
             <div class="invalid-feedback"></div>
@@ -451,6 +452,75 @@
                 }
               ]
               formEditor.setValue(JSON.stringify(titleMapFormJSON, null, '\t'));
+              formEditor.clearSelection();
+              break;
+            case 'bootstrap-grid':
+              const schemaJSON = {
+                "type": "object",
+                "title": "Comment",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "type": "string"
+                  },
+                  "email": {
+                    "title": "Email",
+                    "type": "string",
+                    "pattern": "^\\S+@\\S+$",
+                    "description": "Email will be used for evil."
+                  },
+                  "comment": {
+                    "title": "Comment",
+                    "type": "string",
+                    "maxLength": 20,
+                    "validationMessage": "Don't be greedy!"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "comment"
+                ]
+              }
+              schemaEditor.setValue(JSON.stringify(schemaJSON, null, '\t'));
+              schemaEditor.clearSelection();
+              const formJSON = [
+                {
+                  "type": "help",
+                  "helpvalue": "<div class=\"alert alert-info\">Grid it up with bootstrap</div>"
+                },
+                {
+                  "type": "section",
+                  "htmlClass": "row",
+                  "items": [
+                    {
+                      "type": "section",
+                      "htmlClass": "col-sm",
+                      "items": [
+                        "name"
+                      ]
+                    },
+                    {
+                      "type": "section",
+                      "htmlClass": "col-sm",
+                      "items": [
+                        "email"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "comment",
+                  "type": "textarea",
+                  "placeholder": "Make a comment"
+                },
+                {
+                  "type": "submit",
+                  "style": "btn-info",
+                  "title": "OK"
+                }
+              ]
+              formEditor.setValue(JSON.stringify(formJSON, null, '\t'));
               formEditor.clearSelection();
               break;
           }

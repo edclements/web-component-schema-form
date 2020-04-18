@@ -3,6 +3,7 @@ import './textarea.js';
 import './select.js';
 import './checkboxes.js';
 import './radios.js';
+import './help.js';
 import './submit.js';
 
 const template = document.createElement('template');
@@ -33,12 +34,13 @@ export class SchemaForm extends HTMLElement {
         }
     }
 
-    addField(key, properties, after = null) {
+    addField(key, properties, after = null, parent = null) {
         const fieldProperties = {
             key: key,
             title: properties.title || key,
             help: properties.description,
-            titleMap: properties.titleMap
+            titleMap: properties.titleMap,
+            htmlClass: properties.htmlClass
         };
         const schemaToFormType = {
             textarea: 'textarea',
@@ -55,7 +57,8 @@ export class SchemaForm extends HTMLElement {
             'enum': 'schema-form-select-field',
             'select': 'schema-form-select-field',
             'radios': 'schema-form-radios',
-            'radiobuttons': 'schema-form-radios'
+            'radiobuttons': 'schema-form-radios',
+            'help': 'schema-form-help'
         };
         fieldProperties.element = schemaToFormElement[properties.type];
         if (!fieldProperties.element) {
@@ -70,18 +73,22 @@ export class SchemaForm extends HTMLElement {
         }
         fieldProperties.type = schemaToFormType[properties.type];
         if (properties.element) fieldProperties.element = properties.element;
-        this.addFieldElement(fieldProperties, after);
+        if (properties.htmlClass) fieldProperties.htmlClass = properties.htmlClass;
+        if (properties.helpvalue) fieldProperties.helpvalue = properties.helpvalue;
+        this.addFieldElement(fieldProperties, after, parent);
     }
 
     enumToTitleMap(fieldEnum) {
         return fieldEnum.map(key => ({name: key, value: key}));
     }
 
-    addFieldElement(fieldProperties, after = null) {
+    addFieldElement(fieldProperties, after = null, parent = null) {
         const formField = document.createElement(fieldProperties.element);
         if (after) {
             const field = this.fields.find(field => field.key == after);
             field.after(formField);
+        } else if (parent) {
+            parent.appendChild(formField);
         } else {
             this.formElement.appendChild(formField);
         }
@@ -95,6 +102,19 @@ export class SchemaForm extends HTMLElement {
         } else if (fieldProperties.enum) {
             formField.options = this.enumToTitleMap(fieldProperties.enum);
         }
+        if (fieldProperties.htmlClass) formField.htmlClass = fieldProperties.htmlClass;
+        if (fieldProperties.helpvalue) formField.innerHTML = fieldProperties.helpvalue;
+    }
+
+    addSection(properties, parent = null) {
+        const div = document.createElement('div');
+        if (properties.htmlClass) div.classList.add(properties.htmlClass);
+        if (parent) {
+            parent.appendChild(div);
+        } else {
+            this.formElement.appendChild(div);
+        }
+        this.buildFormSection(properties.items, div);
     }
 
     get schema() {
@@ -121,38 +141,46 @@ export class SchemaForm extends HTMLElement {
         this.formElement.innerHTML = '';
     }
 
-    buildForm() {
-        if (this.form) {
-            this.form.forEach((key) => {
-                if (typeof key == 'string') {
-                    const properties = this.schema.properties[key];
-                    if (properties) this.addField(key, properties);
-                } else if (typeof key == 'object') {
-                    if (key.type == 'submit') {
-                        this.addSubmit(key);
+    buildFormSection(form, element) {
+        form.forEach((key) => {
+            if (typeof key == 'string') {
+                const properties = this.schema.properties[key];
+                if (properties) this.addField(key, properties, null, element);
+            } else if (typeof key == 'object') {
+                if (key.type == 'submit') {
+                    this.addSubmit(key, element);
+                } else if (key.type == 'section') {
+                    this.addSection(key, element);
+                } else {
+                    const properties = this.schema.properties[key.key];
+                    if (properties) {
+                        const fieldProperties = Object.assign({}, properties, key);
+                        this.addField(key.key, fieldProperties, null, element);
                     } else {
-                        const properties = this.schema.properties[key.key];
-                        if (properties) {
-                            const fieldProperties = Object.assign({}, properties, key);
-                            this.addField(key.key, fieldProperties);
-                        }
+                        this.addField(key.key, key, null, element);
                     }
                 }
-            });
+            }
+        });
+    }
+
+    buildForm() {
+        if (this.form) {
+            this.buildFormSection(this.form, this.formElement);
         } else {
             const keys = Object.keys(this.schema.properties);
             keys.forEach((key) => {
                 const properties = this.schema.properties[key];
                 this.addField(key, properties);
             });
-            this.addSubmit();
+            this.addSubmit({}, this.formElement);
             if (this.schema.dependencies) this.checkDependencies();
         }
     }
 
-    addSubmit(properties) {
+    addSubmit(properties, element) {
         const submit = document.createElement('schema-form-submit');
-        this.formElement.appendChild(submit);
+        element.appendChild(submit);
         if (properties) {
             const button = submit.querySelector('button');
             if (properties.title) button.innerHTML = properties.title;
