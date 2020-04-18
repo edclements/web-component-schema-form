@@ -97,7 +97,11 @@ export class SchemaForm extends HTMLElement {
 
     addSection(properties, parent = null) {
         const div = document.createElement('div');
-        if (properties.htmlClass) div.classList.add(properties.htmlClass);
+        if (properties.htmlClass) {
+            properties.htmlClass.split(' ').forEach((className) => {
+                div.classList.add(className);
+            });
+        }
         if (parent) {
             parent.appendChild(div);
         } else {
