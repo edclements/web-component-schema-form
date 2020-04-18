@@ -1,14 +1,14 @@
 {
   "name": "schema-form",
   "version": "1.0.0",
-  "description": "",
+  "description": "Web Component Schema Form. Create web forms with JSON schema and custom HTML elements",
   "main": "schema-form.js",
   "dependencies": {
     "ajv": "^6.12.0",
-    "eslint": "^6.8.0",
-    "http-server": "^0.12.1"
   },
   "devDependencies": {
+    "eslint": "^6.8.0",
+    "http-server": "^0.12.1",
     "@babel/preset-env": "^7.9.5",
     "babelify": "^10.0.0",
     "browserify": "^16.5.1",
@@ -22,8 +22,8 @@
     "watch": "wzrd src/schema-form.js -- -t [ babelify --presets [ @babel/preset-env ] ]",
     "test": "NODE_ENV=test jest"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Ed Clements",
+  "license": "MIT",
   "jest": {
     "testEnvironment": "jest-environment-jsdom-sixteen",
     "verbose": true,
