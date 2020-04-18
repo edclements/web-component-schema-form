@@ -13,6 +13,26 @@ template.innerHTML = `
 
 export class SchemaForm extends HTMLElement {
 
+    constructor() {
+        super();
+        this.schemaToFormElement = {
+            'textarea': 'schema-form-textarea',
+            'string': 'schema-form-field',
+            'integer': 'schema-form-field',
+            'number': 'schema-form-field',
+            'array-with-enum': 'schema-form-checkboxes',
+            'enum': 'schema-form-select-field',
+            'select': 'schema-form-select-field',
+            'radios': 'schema-form-radios',
+            'radiobuttons': 'schema-form-radios',
+            'help': 'schema-form-help'
+        };
+    }
+
+    mapElement(type, element) {
+        this.schemaToFormElement[type] = element;
+    }
+
     connectedCallback() {
         const node = document.importNode(template.content, true);
         this.appendChild(node);
@@ -48,26 +68,14 @@ export class SchemaForm extends HTMLElement {
             integer: 'number',
             number: 'number'
         };
-        const schemaToFormElement = {
-            'textarea': 'schema-form-textarea',
-            'string': 'schema-form-field',
-            'integer': 'schema-form-field',
-            'number': 'schema-form-field',
-            'array-with-enum': 'schema-form-checkboxes',
-            'enum': 'schema-form-select-field',
-            'select': 'schema-form-select-field',
-            'radios': 'schema-form-radios',
-            'radiobuttons': 'schema-form-radios',
-            'help': 'schema-form-help'
-        };
-        fieldProperties.element = schemaToFormElement[properties.type];
+        fieldProperties.element = this.schemaToFormElement[properties.type];
         if (!fieldProperties.element) {
             if (properties.type == 'array' && properties.items.enum) {
-                fieldProperties.element = schemaToFormElement['array-with-enum'];
+                fieldProperties.element = this.schemaToFormElement['array-with-enum'];
                 fieldProperties.enum = properties.items.enum;
                 fieldProperties.type = schemaToFormType[properties.items.type];
             } else if (properties.enum) {
-                fieldProperties.element = schemaToFormElement['enum'];
+                fieldProperties.element = this.schemaToFormElement['enum'];
                 fieldProperties.enum = properties.enum;
             }
         }
@@ -190,7 +198,6 @@ export class SchemaForm extends HTMLElement {
 
     submit(event) {
         event.preventDefault();
-        const fields = this.formElement.querySelectorAll('schema-form-field');
         const ajv = new Ajv();
         const valid = ajv.validate(this.schema, this.model);
         if (!valid) {
@@ -201,16 +208,9 @@ export class SchemaForm extends HTMLElement {
                 } else {
                     key = error.dataPath.match(/\.(.*)/)[1];
                 }
-                fields.forEach((element) => {
+                this.fields.forEach((element) => {
                     if (element.key == key) {
-                        const input = element.querySelector('input');
-                        input.classList.add('is-invalid');
-                        const invalidFeedback = element.querySelector('.invalid-feedback');
-                        if (error.keyword == 'required') {
-                            invalidFeedback.innerHTML = 'required';
-                        } else {
-                            invalidFeedback.innerHTML = error.message;
-                        }
+                        element.error = error;
                     }
                 });
             });

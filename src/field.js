@@ -67,6 +67,20 @@ export class SchemaFormField extends HTMLElement {
         this._key = value;
     }
 
+    get error() {
+        return this._error;
+    }
+
+    set error(value) {
+        this._error = value;
+        this.inputElement.classList.add('is-invalid');
+        if (this.error.keyword == 'required') {
+            this.querySelector('.invalid-feedback').innerHTML = 'required';
+        } else {
+            this.querySelector('.invalid-feedback').innerHTML = this.error.message;
+        }
+    }
+
     attributeChangedCallback() {
         if (this.querySelector('label') && this.title)
             this.querySelector('label').innerHTML = this.title;
