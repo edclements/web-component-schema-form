@@ -23,7 +23,6 @@ export class SchemaForm extends HTMLElement {
             'checkboxes': 'schema-form-checkboxes',
             'select': 'schema-form-select-field',
             'radios': 'schema-form-radios',
-            'radiobuttons': 'schema-form-radios',
             'help': 'schema-form-help'
         };
     }

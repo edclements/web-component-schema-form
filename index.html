@@ -311,15 +311,6 @@
                       "c"
                     ]
                   },
-                  "select2": {
-                    "title": "Select with titleMap (old style)",
-                    "type": "string",
-                    "enum": [
-                      "a",
-                      "b",
-                      "c"
-                    ]
-                  },
                   "noenum": {
                     "type": "string",
                     "title": "No enum, but forms says it's a select"
@@ -360,11 +351,6 @@
                       "b",
                       "c"
                     ]
-                  },
-                  "radiobuttons": {
-                    "title": "Radio buttons used to switch a boolean",
-                    "type": "boolean",
-                    "default": false
                   }
                 }
               }
@@ -372,15 +358,6 @@
               schemaEditor.clearSelection();
               titleMapFormJSON = [
                 "select",
-                {
-                  "key": "select2",
-                  "type": "select",
-                  "titleMap": {
-                    "a": "A",
-                    "b": "B",
-                    "c": "C"
-                  }
-                },
                 {
                   "key": "noenum",
                   "type": "select",
@@ -433,20 +410,6 @@
                     {
                       "value": "a",
                       "name": "A"
-                    }
-                  ]
-                },
-                {
-                  "key": "radiobuttons",
-                  "type": "radiobuttons",
-                  "titleMap": [
-                    {
-                      "value": false,
-                      "name": "No way"
-                    },
-                    {
-                      "value": true,
-                      "name": "OK"
                     }
                   ]
                 }
