@@ -65,6 +65,12 @@ export class SchemaFormField extends HTMLElement {
 
     set key(value) {
         this._key = value;
+        if (this.key) {
+            if (this.querySelector('label'))
+                this.querySelector('label').setAttribute('for', this.key);
+            if (this.querySelector('input'))
+                this.querySelector('input').id = this.key;
+        }
     }
 
     get error() {

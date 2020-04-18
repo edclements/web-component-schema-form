@@ -54,6 +54,7 @@ export class SchemaForm extends HTMLElement {
 
     addField(key, properties, after = null, parent = null) {
         const fieldProperties = Object.assign({}, properties);
+        fieldProperties.key = key;
         fieldProperties.title = fieldProperties.title || key;
         const schemaToFormType = {
             textarea: 'textarea',
