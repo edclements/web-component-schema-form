@@ -6,7 +6,8 @@ Create web forms with JSON schema and custom HTML elements
 ```
 <custom-element-demo>
   <template>
-    <script type="module" src="../dist/schema-form.js"></script>
+    <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="web-component-schema-form.html">
     <script>
         const json = {
           "type": "object",
