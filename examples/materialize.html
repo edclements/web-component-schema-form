@@ -48,14 +48,13 @@
       </div>
     </div>
 
-    <script type="module" src="../src/schema-form.js"></script>
+    <script type="module" src="../dist/schema-form.js"></script>
     <script type="module" src="./materialize-select.js"></script>
     <script type="module" src="./materialize-field.js"></script>
     <script type="module" src="./materialize-textarea.js"></script>
     <script type="module" src="./materialize-checkboxes.js"></script>
     <script type="module" src="./materialize-radios.js"></script>
     <script src="../ace.js"></script>
-    <script src="../ajv.min.js"></script>
     <script>
         var schemaEditor = ace.edit("schema-editor");
         schemaEditor.setOptions({maxLines: 100});
@@ -223,8 +222,7 @@
           const schemaForm = document.querySelector('schema-form');
           schemaForm.mapElement('textarea', 'schema-form-materialize-textarea');
           schemaForm.mapElement('string', 'schema-form-materialize-field');
-          schemaForm.mapElement('integer', 'schema-form-materialize-field');
-          schemaForm.mapElement('array-with-enum', 'schema-form-materialize-checkboxes');
+          schemaForm.mapElement('number', 'schema-form-materialize-field');
           schemaForm.mapElement('checkboxes', 'schema-form-materialize-checkboxes');
           schemaForm.mapElement('radios', 'schema-form-materialize-radios');
           try {
