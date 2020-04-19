@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Web Component Schema Form</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous">
+
+    <style type="text/css" media="screen">
+        #editor {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="flex-container">
+      <div class="row">
+        <div class="col-md">
+          <h3>Model</h3>
+          <pre><code></code></pre>
+        </div>
+        <div class="col-md">
+          <h3>Generated Form</h3>
+          <schema-form></schema-form>
+        </div>
+        <div class="col-md">
+          <div class="form-group">
+            <label>Select Examples</label>
+            <select type="text" class="form-control" id="select-examples">
+              <option selected value="simple">Simple</option>
+              <option value="titlemap">TitleMap Examples</option>
+              <option value="bootstrap-grid">Bootstrap Grid</option>
+            </select>
+            <small class="form-text text-muted"></small>
+            <div class="invalid-feedback"></div>
+          </div>
+          <h3>Form</h3>
+          <div id="form-editor"></div>
+          <h3>Schema</h3>
+          <div id="schema-editor"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./ace.js"></script>
+    <script type="module" src="../dist/schema-form.js"></script>
+    <script>
+        var schemaEditor = ace.edit("schema-editor");
+        schemaEditor.setOptions({maxLines: 100});
+        schemaEditor.session.setMode("ace/mode/json");
+        const json = {
+          "type": "object",
+          "title": "Comment",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "email": {
+              "title": "Email",
+              "type": "string",
+              "pattern": "^\\S+@\\S+$",
+              "description": "Email will be used for evil."
+            },
+            "comment": {
+              "title": "Comment",
+              "type": "string",
+              "maxLength": 20,
+              "validationMessage": "Don't be greedy!"
+            }
+          },
+          "required": [
+            "name",
+            "email",
+            "comment"
+          ]
+        };
+        const titleMapJSON = {
+          "type": "object",
+          "properties": {
+            "select": {
+              "title": "Select without titleMap",
+              "type": "string",
+              "enum": [
+                "a",
+                "b",
+                "c"
+              ]
+            },
+            "select2": {
+              "title": "Select with titleMap",
+              "type": "string",
+              "enum": [
+                "a",
+                "b",
+                "c"
+              ],
+              "titleMap": [{
+                "value": "a",
+                "name": "A"
+              }, {
+                "value": "b",
+                "name": "B"
+              }, {
+                "value": "c",
+                "name": "C"
+              }]
+            },
+            "noenum": {
+              "type": "string",
+              "title": "No enum, but forms says it's a select"
+            },
+            "array": {
+              "title": "Array with enum defaults to 'checkboxes'",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b",
+                  "c"
+                ]
+              }
+            },
+            "array2": {
+              "title": "Array with titleMap",
+              "type": "array",
+              "default": [
+                "b",
+                "c"
+              ],
+              "items": {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b",
+                  "c"
+                ]
+              }
+            },
+            "radios": {
+              "title": "Basic radio button example",
+              "type": "string",
+              "enum": [
+                "a",
+                "b",
+                "c"
+              ],
+              "element": "schema-form-radios"
+            },
+            "radiobuttons": {
+              "title": "Radio buttons used to switch a boolean",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        };
+        const propertyDependencyJSON = {
+          "type": "object",
+
+          "properties": {
+            "name": { "type": "string" },
+            "credit_card": { "type": "number" },
+            "billing_address": { "type": "string" }
+          },
+
+          "required": ["name"],
+
+          "dependencies": {
+            "credit_card": ["billing_address"]
+          }
+        };
+        schemaDependencyJSON = {
+          "type": "object",
+
+          "properties": {
+            "name": { "type": "string" },
+            "credit_card": { "type": "number" }
+          },
+
+          "required": ["name"],
+
+          "dependencies": {
+            "credit_card": {
+              "properties": {
+                "billing_address": { "type": "string" }
+              },
+              "required": ["billing_address"]
+            }
+          }
+        }
+        schemaEditor.setValue(JSON.stringify(json, null, '\t'));
+        schemaEditor.clearSelection();
+
+        var formEditor = ace.edit("form-editor");
+        formEditor.setOptions({maxLines: 100, minLines: 10});
+        formEditor.session.setMode("ace/mode/json");
+        const formJSON = [
+          "name",
+          "email",
+          {
+            "key": "comment",
+            "type": "textarea",
+            "placeholder": "Make a comment"
+          },
+          {
+            "type": "submit",
+            "style": "btn-info",
+            "title": "OK"
+          }
+        ];
+        formEditor.setValue(JSON.stringify(formJSON, null, '\t'));
+        formEditor.clearSelection();
+
+        function update() {
+          const schemaForm = document.querySelector('schema-form');
+          try {
+            const schema = schemaEditor.getSession().getValue();
+            const form = formEditor.getSession().getValue();
+            if (schema != "" && form != "") {
+              schemaForm.schema = JSON.parse(schema);
+              schemaForm.form = JSON.parse(form);
+            }
+          } catch(e) {
+            console.error(e);
+          }
+        }
+        schemaEditor.getSession().on('change', update);
+        formEditor.getSession().on('change', update);
+        document.addEventListener("DOMContentLoaded", function() {
+          update();
+          var form = document.querySelector('form');
+          form.addEventListener('change', function() {
+            const schemaForm = document.querySelector('schema-form');
+            document.querySelector('code').innerHTML = JSON.stringify(schemaForm.model);
+          });
+        });
+
+        document.querySelector('#select-examples').addEventListener('change', (event) => {
+          switch(event.target.value) {
+            case 'simple':
+              const simpleSchemaJSON = {
+                "type": "object",
+                "title": "Comment",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "type": "string"
+                  },
+                  "email": {
+                    "title": "Email",
+                    "type": "string",
+                    "pattern": "^\\S+@\\S+$",
+                    "description": "Email will be used for evil."
+                  },
+                  "comment": {
+                    "title": "Comment",
+                    "type": "string",
+                    "maxLength": 20,
+                    "validationMessage": "Don't be greedy!"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "comment"
+                ]
+              }
+              schemaEditor.setValue(JSON.stringify(simpleSchemaJSON, null, '\t'));
+              schemaEditor.clearSelection();
+              const simpleFormJSON = [
+                "name",
+                "email",
+                {
+                  "key": "comment",
+                  "type": "textarea",
+                  "placeholder": "Make a comment"
+                },
+                {
+                  "type": "submit",
+                  "style": "btn-info",
+                  "title": "OK"
+                }
+              ]
+              formEditor.setValue(JSON.stringify(simpleFormJSON, null, '\t'));
+              formEditor.clearSelection();
+              break;
+            case 'titlemap':
+              titleMapSchemaJSON = {
+                "type": "object",
+                "properties": {
+                  "select": {
+                    "title": "Select without titleMap",
+                    "type": "string",
+                    "enum": [
+                      "a",
+                      "b",
+                      "c"
+                    ]
+                  },
+                  "noenum": {
+                    "type": "string",
+                    "title": "No enum, but forms says it's a select"
+                  },
+                  "array": {
+                    "title": "Array with enum defaults to 'checkboxes'",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c"
+                      ]
+                    }
+                  },
+                  "array2": {
+                    "title": "Array with titleMap",
+                    "type": "array",
+                    "default": [
+                      "b",
+                      "c"
+                    ],
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c"
+                      ]
+                    }
+                  },
+                  "radios": {
+                    "title": "Basic radio button example",
+                    "type": "string",
+                    "enum": [
+                      "a",
+                      "b",
+                      "c"
+                    ]
+                  }
+                }
+              }
+              schemaEditor.setValue(JSON.stringify(titleMapSchemaJSON, null, '\t'));
+              schemaEditor.clearSelection();
+              titleMapFormJSON = [
+                "select",
+                {
+                  "key": "noenum",
+                  "type": "select",
+                  "titleMap": [
+                    {
+                      "value": "a",
+                      "name": "A"
+                    },
+                    {
+                      "value": "b",
+                      "name": "B"
+                    },
+                    {
+                      "value": "c",
+                      "name": "C"
+                    }
+                  ]
+                },
+                "array",
+                {
+                  "key": "array2",
+                  "type": "checkboxes",
+                  "titleMap": [
+                    {
+                      "value": "a",
+                      "name": "A"
+                    },
+                    {
+                      "value": "b",
+                      "name": "B"
+                    },
+                    {
+                      "value": "c",
+                      "name": "C"
+                    }
+                  ]
+                },
+                {
+                  "key": "radios",
+                  "type": "radios",
+                  "titleMap": [
+                    {
+                      "value": "c",
+                      "name": "C"
+                    },
+                    {
+                      "value": "b",
+                      "name": "B"
+                    },
+                    {
+                      "value": "a",
+                      "name": "A"
+                    }
+                  ]
+                }
+              ]
+              formEditor.setValue(JSON.stringify(titleMapFormJSON, null, '\t'));
+              formEditor.clearSelection();
+              break;
+            case 'bootstrap-grid':
+              const schemaJSON = {
+                "type": "object",
+                "title": "Comment",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "type": "string"
+                  },
+                  "email": {
+                    "title": "Email",
+                    "type": "string",
+                    "pattern": "^\\S+@\\S+$",
+                    "description": "Email will be used for evil."
+                  },
+                  "comment": {
+                    "title": "Comment",
+                    "type": "string",
+                    "maxLength": 20,
+                    "validationMessage": "Don't be greedy!"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "comment"
+                ]
+              }
+              schemaEditor.setValue(JSON.stringify(schemaJSON, null, '\t'));
+              schemaEditor.clearSelection();
+              const formJSON = [
+                {
+                  "type": "help",
+                  "helpvalue": "<div class=\"alert alert-info\">Grid it up with bootstrap</div>"
+                },
+                {
+                  "type": "section",
+                  "htmlClass": "row",
+                  "items": [
+                    {
+                      "type": "section",
+                      "htmlClass": "col-sm",
+                      "items": [
+                        "name"
+                      ]
+                    },
+                    {
+                      "type": "section",
+                      "htmlClass": "col-sm",
+                      "items": [
+                        "email"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "comment",
+                  "type": "textarea",
+                  "placeholder": "Make a comment"
+                },
+                {
+                  "type": "submit",
+                  "style": "btn-info",
+                  "title": "OK"
+                }
+              ]
+              formEditor.setValue(JSON.stringify(formJSON, null, '\t'));
+              formEditor.clearSelection();
+              break;
+          }
+        });
+    </script>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous">
+    </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous">
+    </script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous">
+    </script>
+  </body>
+</html>
