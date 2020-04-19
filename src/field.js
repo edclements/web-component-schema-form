@@ -97,5 +97,6 @@ export class SchemaFormField extends HTMLElement {
     }
 }
 
-window.customElements.define('schema-form-field', SchemaFormField);
+if (!window.customElements.get('schema-form-field'))
+    window.customElements.define('schema-form-field', SchemaFormField);
 
