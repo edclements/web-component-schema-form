@@ -35,5 +35,8 @@
       "src"
     ]
   },
-  "repository": "github:edclements/web-component-schema-form"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edclements/web-component-schema-form"
+  }
 }
