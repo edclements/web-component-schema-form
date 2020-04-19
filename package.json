@@ -1,6 +1,6 @@
 {
   "name": "web-component-schema-form",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Web Component Schema Form. Create web forms with JSON schema and custom HTML elements",
   "main": "dist/schema-form.js",
   "files": [
