@@ -34,5 +34,6 @@
       "node_modules",
       "src"
     ]
-  }
+  },
+  "repository": "github:edclements/web-component-schema-form"
 }
