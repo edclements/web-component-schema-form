@@ -7460,6 +7460,7 @@ window.customElements.define('schema-form-help', SchemaFormHelp);
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.parseSchema = parseSchema;
 exports.parseForm = parseForm;
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -7477,44 +7478,90 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function parseSchema(schema) {
   switch (schema.type) {
     case 'object':
-      parseObject(schema.properties);
-      break;
+      return parseObject(schema.properties);
   }
 }
 
 function parseObject(properties) {
-  Object.entries(properties).reduce(function (form, _ref) {
+  return Object.entries(properties).reduce(function (form, _ref) {
     var _ref2 = _slicedToArray(_ref, 2),
         key = _ref2[0],
         property = _ref2[1];
 
-    var formItem = Object.assign({}, {
-      key: key
-    }, property);
-
-    if (property["enum"]) {
-      formItem.type = 'select';
-    } else if (property.type == 'array' && properties.items["enum"]) {
-      formItem.type = 'checkboxes';
-    }
-
-    form.push(formItem);
+    form.push(parseObjectProperties(key, property));
     return form;
   }, []);
 }
+
+function parseObjectProperties(key, properties) {
+  var formItem = Object.assign({}, {
+    key: key
+  }, properties);
+
+  if (properties["enum"]) {
+    formItem.type = 'select';
+  } else if (properties.type == 'array' && properties.items["enum"]) {
+    formItem.type = 'checkboxes';
+  } else {
+    var mappedType = schemaToFormType[properties.type];
+    if (mappedType) formItem.type = mappedType;
+  }
+
+  formItem.title = formItem.title || key;
+  return formItem;
+}
+
+var schemaToFormType = {
+  string: 'text'
+};
 
 function parseForm(form, schema) {
   if (form == ['*']) {
     return parseSchema(schema);
   } else {
-    form.map(function (formItem) {
-      if (typeof formItem == 'string') {
-        return parseObject(schema[formItem]);
-      } else {
-        return Object.assign({}, parseObject(schema[formItem.key]), formItem);
-      }
-    });
+    return form.reduce(function (formItems, formItem) {
+      return handleFormItem(formItems, formItem, schema);
+    }, []);
   }
+}
+
+function handleFormItem(form, formItem, schema) {
+  if (typeof formItem == 'string') {
+    var schemaProperties = schema.properties[formItem];
+
+    if (schemaProperties) {
+      form.push(parseObjectProperties(formItem, schemaProperties));
+    }
+  } else {
+    var _schemaProperties = schema.properties[formItem.key];
+
+    switch (formItem.type) {
+      case 'section':
+        formItem.items = formItem.items.reduce(function (sectionForm, sectionFormItem) {
+          return handleFormItem(sectionForm, sectionFormItem, schema);
+        }, []);
+        form.push(formItem);
+        break;
+
+      case 'submit':
+        form.push(formItem);
+        break;
+
+      default:
+        if (_schemaProperties) {
+          form.push(mergeFormSchemaProperties(formItem, _schemaProperties));
+        } else {
+          form.push(formItem);
+        }
+
+    }
+  }
+
+  return form;
+}
+
+function mergeFormSchemaProperties(formProperties, schemaProperties) {
+  return Object.assign({}, parseObjectProperties(formProperties.key, schemaProperties), formProperties);
 }
 
 },{}],51:[function(require,module,exports){
@@ -7626,7 +7673,7 @@ require("./help.js");
 
 require("./submit.js");
 
-var _parseSchema = _interopRequireDefault(require("./parse-schema.js"));
+var _parse = require("./parse.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -7674,8 +7721,7 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
     _this = _super.call(this);
     _this.elementMap = {
       'textarea': 'schema-form-textarea',
-      'string': 'schema-form-field',
-      'integer': 'schema-form-field',
+      'text': 'schema-form-field',
       'number': 'schema-form-field',
       'checkboxes': 'schema-form-checkboxes',
       'select': 'schema-form-select-field',
@@ -7699,7 +7745,7 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
       var node = document.importNode(template.content, true);
       this.appendChild(node);
       this.formElement = this.querySelector('form');
-      this.formElement.addEventListener('submit', this.submit.bind(this));
+      this.formElement.addEventListener('submit', this.onSubmit.bind(this));
       this.formElement.addEventListener('change', this.onChange.bind(this));
 
       if (this.hasAttribute('schema')) {
@@ -7710,28 +7756,10 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
           keys.forEach(function (key) {
             var properties = data.properties[key];
 
-            _this2.addField(key, properties);
+            _this2.addField(properties);
           });
         });
       }
-    }
-  }, {
-    key: "addField",
-    value: function addField(key, properties) {
-      var after = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var parent = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-      var fieldProperties = Object.assign({}, properties);
-      fieldProperties.key = key;
-      fieldProperties.title = fieldProperties.title || key;
-      var schemaToFormType = {
-        textarea: 'textarea',
-        string: 'text',
-        integer: 'number',
-        number: 'number'
-      };
-      fieldProperties.element = this.elementMap[properties.type];
-      fieldProperties.type = schemaToFormType[properties.type] || properties.type;
-      this.addFieldElement(fieldProperties, after, parent);
     }
   }, {
     key: "enumToTitleMap",
@@ -7744,11 +7772,12 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
       });
     }
   }, {
-    key: "addFieldElement",
-    value: function addFieldElement(fieldProperties) {
+    key: "addField",
+    value: function addField(properties) {
       var after = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var parent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var formField = document.createElement(fieldProperties.element);
+      var element = this.elementMap[properties.type];
+      var formField = document.createElement(element);
 
       if (after) {
         var field = this.fields.find(function (field) {
@@ -7761,21 +7790,21 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
         this.formElement.appendChild(formField);
       }
 
-      formField.key = fieldProperties.key;
-      formField.setAttribute('title', fieldProperties.title);
-      if (fieldProperties.help) formField.setAttribute('help', fieldProperties.help);
-      formField.setAttribute('type', fieldProperties.type);
+      formField.key = properties.key;
+      formField.setAttribute('title', properties.title);
+      if (properties.help) formField.setAttribute('help', properties.help);
+      formField.setAttribute('type', properties.type);
 
-      if (fieldProperties.titleMap) {
-        formField.options = fieldProperties.titleMap;
-      } else if (fieldProperties["enum"]) {
-        formField.options = this.enumToTitleMap(fieldProperties["enum"]);
-      } else if (fieldProperties.items && fieldProperties.items["enum"]) {
-        formField.options = this.enumToTitleMap(fieldProperties.items["enum"]);
+      if (properties.titleMap) {
+        formField.options = properties.titleMap;
+      } else if (properties["enum"]) {
+        formField.options = this.enumToTitleMap(properties["enum"]);
+      } else if (properties.items && properties.items["enum"]) {
+        formField.options = this.enumToTitleMap(properties.items["enum"]);
       }
 
-      if (fieldProperties.htmlClass) formField.htmlClass = fieldProperties.htmlClass;
-      if (fieldProperties.helpvalue) formField.innerHTML = fieldProperties.helpvalue;
+      if (properties.htmlClass) formField.htmlClass = properties.htmlClass;
+      if (properties.helpvalue) formField.innerHTML = properties.helpvalue;
       this.fields.push(formField);
     }
   }, {
@@ -7809,44 +7838,33 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
     value: function buildFormSection(form, element) {
       var _this3 = this;
 
-      (0, _parseSchema["default"])(form).forEach(function (formItem) {
-        _this3.addField(formItem.key, formItem, null, element);
-      }); // form.forEach((key) => {
-      //     if (typeof key == 'string') {
-      //         const properties = this.schema.properties[key];
-      //         if (properties) {
-      //             if (properties.enum) {
-      //                 properties.type = 'select';
-      //             } else if (properties.type == 'array' && properties.items.enum) {
-      //                 properties.type = 'checkboxes';
-      //             }
-      //             this.addField(key, properties, null, element);
-      //         }
-      //     } else if (typeof key == 'object') {
-      //         if (key.type == 'submit') {
-      //             this.addSubmit(key, element);
-      //         } else if (key.type == 'section') {
-      //             this.addSection(key, element);
-      //         } else {
-      //             const properties = this.schema.properties[key.key];
-      //             if (properties) {
-      //                 const fieldProperties = Object.assign({}, properties, key);
-      //                 this.addField(key.key, fieldProperties, null, element);
-      //             } else {
-      //                 this.addField(key.key, key, null, element);
-      //             }
-      //         }
-      //     }
-      // });
+      form.forEach(function (formItem) {
+        if (formItem) {
+          switch (formItem.type) {
+            case 'section':
+              _this3.addSection(formItem, element);
+
+              break;
+
+            case 'submit':
+              _this3.addSubmit(formItem, element);
+
+              break;
+
+            default:
+              _this3.addField(formItem, null, element);
+
+          }
+        }
+      });
     }
   }, {
     key: "buildForm",
     value: function buildForm() {
       if (this.form) {
-        this.buildFormSection(this.form, this.formElement);
+        this.buildFormSection((0, _parse.parseForm)(this.form, this.schema), this.formElement);
       } else {
-        var keys = Object.keys(this.schema.properties);
-        this.buildFormSection(keys, this.formElement);
+        this.buildFormSection((0, _parse.parseSchema)(this.schema), this.formElement);
         this.addSubmit({}, this.formElement);
         if (this.schema.dependencies) this.checkDependencies();
       }
@@ -7864,31 +7882,32 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
       }
     }
   }, {
-    key: "submit",
-    value: function submit(event) {
-      var _this4 = this;
-
+    key: "onSubmit",
+    value: function onSubmit(event) {
       event.preventDefault();
       var ajv = new _ajv["default"]();
       var valid = ajv.validate(this.schema, this.model);
 
       if (!valid) {
-        ajv.errors.forEach(function (error) {
-          var key;
-
-          if (error.keyword == 'required') {
-            key = error.params.missingProperty;
-          } else {
-            key = error.dataPath.match(/\.(.*)/)[1];
-          }
-
-          _this4.fields.forEach(function (element) {
-            if (element.key == key) {
-              element.error = error;
-            }
-          });
-        });
+        ajv.errors.forEach(this.addError.bind(this));
       }
+    }
+  }, {
+    key: "addError",
+    value: function addError(error) {
+      var key;
+
+      if (error.keyword == 'required') {
+        key = error.params.missingProperty;
+      } else {
+        key = error.dataPath.match(/\.(.*)/)[1];
+      }
+
+      this.fields.forEach(function (element) {
+        if (element.key == key) {
+          element.error = error;
+        }
+      });
     }
   }, {
     key: "onChange",
@@ -7898,27 +7917,27 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
   }, {
     key: "checkDependencies",
     value: function checkDependencies() {
-      var _this5 = this;
+      var _this4 = this;
 
       var dependencies = Object.keys(this.schema.dependencies);
       dependencies.forEach(function (key) {
-        if (_this5.model[key] && _this5.model[key] != '') {
-          var dependency = _this5.schema.dependencies[key];
+        if (_this4.model[key] && _this4.model[key] != '') {
+          var dependency = _this4.schema.dependencies[key];
 
-          _this5.addDependencies(key, dependency);
+          _this4.addDependencies(key, dependency);
         }
       });
     }
   }, {
     key: "addDependencies",
     value: function addDependencies(key, dependency) {
-      var _this6 = this;
+      var _this5 = this;
 
       Object.keys(dependency.properties).forEach(function (newKey) {
-        if (!_this6.fields.some(function (field) {
+        if (!_this5.fields.some(function (field) {
           return field.key == newKey;
         })) {
-          _this6.addField(newKey, dependency.properties[newKey], key);
+          _this5.addField(dependency.properties[newKey], key);
         }
       });
     }
@@ -7958,7 +7977,7 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
 exports.SchemaForm = SchemaForm;
 window.customElements.define('schema-form', SchemaForm);
 
-},{"./checkboxes.js":47,"./field.js":48,"./help.js":49,"./parse-schema.js":50,"./radios.js":51,"./select.js":53,"./submit.js":54,"./textarea.js":55,"ajv":1}],53:[function(require,module,exports){
+},{"./checkboxes.js":47,"./field.js":48,"./help.js":49,"./parse.js":50,"./radios.js":51,"./select.js":53,"./submit.js":54,"./textarea.js":55,"ajv":1}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
