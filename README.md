@@ -50,3 +50,7 @@ Create web forms with JSON schema and custom HTML elements
 <schema-form></schema-form>
 ```
 
+The included custom elements work with Bootstrap 4. Various examples can be viewed [here](https://edclements.github.io/web-component-schema-form/examples/bootstrap.html).
+
+Alternatively a Materialize version can be found [here](https://edclements.github.io/web-component-schema-form/examples/materialize.html).
+
