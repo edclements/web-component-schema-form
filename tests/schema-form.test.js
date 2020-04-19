@@ -76,7 +76,7 @@ test('array with enum displays checkboxes', () => {
     expect(inputElements[2].getAttribute('type')).toEqual('checkbox');
 });
 
-test('required field displays error', () => {
+test('empty required field displays error', () => {
     const schemaForm = document.querySelector('schema-form');
     schemaForm.schema = {
         type: 'object',
