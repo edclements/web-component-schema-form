@@ -27,6 +27,7 @@ export class SchemaForm extends HTMLElement {
             'radios': 'schema-form-radios',
             'help': 'schema-form-help'
         };
+        this.fields = [];
     }
 
     mapElement(type, element) {
@@ -97,6 +98,7 @@ export class SchemaForm extends HTMLElement {
         }
         if (fieldProperties.htmlClass) formField.htmlClass = fieldProperties.htmlClass;
         if (fieldProperties.helpvalue) formField.innerHTML = fieldProperties.helpvalue;
+        this.fields.push(formField);
     }
 
     addSection(properties, parent = null) {
@@ -135,6 +137,7 @@ export class SchemaForm extends HTMLElement {
     }
 
     clearForm() {
+        this.fields = [];
         this.formElement.innerHTML = '';
     }
 
@@ -211,17 +214,10 @@ export class SchemaForm extends HTMLElement {
     }
 
     get model() {
-        const fields = this.formElement.children;
-        const model = {};
-        for (let i = 0; i < fields.length; i++) {
-            const element = fields[i];
-            if (element.value == '') {
-                delete model[element.key];
-            } else {
-                model[element.key] = element.value;
-            }
-        }
-        return model;
+        return this.fields.reduce((model, field) => {
+            if (field.value != '') model[field.key] = field.value;
+            return model;
+        }, {});
     }
 
     onChange() {
@@ -244,15 +240,6 @@ export class SchemaForm extends HTMLElement {
                 this.addField(newKey, dependency.properties[newKey], key);
             }
         });
-    }
-
-    get fields() {
-        const children = this.formElement.children;
-        const fields = [];
-        for (let i = 0; i < children.length; i++) {
-            fields.push(children[i]);
-        }
-        return fields;
     }
 
 }
