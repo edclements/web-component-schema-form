@@ -7,6 +7,7 @@ import './checkboxes.js';
 import './radios.js';
 import './help.js';
 import './submit.js';
+import {parseForm,parseSchema} from './parse.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -19,8 +20,7 @@ export class SchemaForm extends HTMLElement {
         super();
         this.elementMap = {
             'textarea': 'schema-form-textarea',
-            'string': 'schema-form-field',
-            'integer': 'schema-form-field',
+            'text': 'schema-form-field',
             'number': 'schema-form-field',
             'checkboxes': 'schema-form-checkboxes',
             'select': 'schema-form-select-field',
@@ -38,7 +38,7 @@ export class SchemaForm extends HTMLElement {
         const node = document.importNode(template.content, true);
         this.appendChild(node);
         this.formElement = this.querySelector('form');
-        this.formElement.addEventListener('submit', this.submit.bind(this));
+        this.formElement.addEventListener('submit', this.onSubmit.bind(this));
         this.formElement.addEventListener('change', this.onChange.bind(this));
         if (this.hasAttribute('schema')) {
             fetch(this.getAttribute('schema'))
@@ -49,33 +49,19 @@ export class SchemaForm extends HTMLElement {
                     const keys = Object.keys(data.properties);
                     keys.forEach((key) => {
                         const properties = data.properties[key];
-                        this.addField(key, properties);
+                        this.addField(properties);
                     });
                 });
         }
-    }
-
-    addField(key, properties, after = null, parent = null) {
-        const fieldProperties = Object.assign({}, properties);
-        fieldProperties.key = key;
-        fieldProperties.title = fieldProperties.title || key;
-        const schemaToFormType = {
-            textarea: 'textarea',
-            string: 'text',
-            integer: 'number',
-            number: 'number'
-        };
-        fieldProperties.element = this.elementMap[properties.type];
-        fieldProperties.type = schemaToFormType[properties.type] || properties.type;
-        this.addFieldElement(fieldProperties, after, parent);
     }
 
     enumToTitleMap(fieldEnum) {
         return fieldEnum.map(key => ({name: key, value: key}));
     }
 
-    addFieldElement(fieldProperties, after = null, parent = null) {
-        const formField = document.createElement(fieldProperties.element);
+    addField(properties, after = null, parent = null) {
+        const element = this.elementMap[properties.type];
+        const formField = document.createElement(element);
         if (after) {
             const field = this.fields.find(field => field.key == after);
             field.after(formField);
@@ -84,20 +70,20 @@ export class SchemaForm extends HTMLElement {
         } else {
             this.formElement.appendChild(formField);
         }
-        formField.key = fieldProperties.key;
-        formField.setAttribute('title', fieldProperties.title);
-        if (fieldProperties.help)
-            formField.setAttribute('help', fieldProperties.help);
-        formField.setAttribute('type', fieldProperties.type);
-        if (fieldProperties.titleMap) {
-            formField.options = fieldProperties.titleMap;
-        } else if (fieldProperties.enum) {
-            formField.options = this.enumToTitleMap(fieldProperties.enum);
-        } else if (fieldProperties.items && fieldProperties.items.enum) {
-            formField.options = this.enumToTitleMap(fieldProperties.items.enum);
+        formField.key = properties.key;
+        formField.setAttribute('title', properties.title);
+        if (properties.help)
+            formField.setAttribute('help', properties.help);
+        formField.setAttribute('type', properties.type);
+        if (properties.titleMap) {
+            formField.options = properties.titleMap;
+        } else if (properties.enum) {
+            formField.options = this.enumToTitleMap(properties.enum);
+        } else if (properties.items && properties.items.enum) {
+            formField.options = this.enumToTitleMap(properties.items.enum);
         }
-        if (fieldProperties.htmlClass) formField.htmlClass = fieldProperties.htmlClass;
-        if (fieldProperties.helpvalue) formField.innerHTML = fieldProperties.helpvalue;
+        if (properties.htmlClass) formField.htmlClass = properties.htmlClass;
+        if (properties.helpvalue) formField.innerHTML = properties.helpvalue;
         this.fields.push(formField);
     }
 
@@ -142,30 +128,17 @@ export class SchemaForm extends HTMLElement {
     }
 
     buildFormSection(form, element) {
-        form.forEach((key) => {
-            if (typeof key == 'string') {
-                const properties = this.schema.properties[key];
-                if (properties) {
-                    if (properties.enum) {
-                        properties.type = 'select';
-                    } else if (properties.type == 'array' && properties.items.enum) {
-                        properties.type = 'checkboxes';
-                    }
-                    this.addField(key, properties, null, element);
-                }
-            } else if (typeof key == 'object') {
-                if (key.type == 'submit') {
-                    this.addSubmit(key, element);
-                } else if (key.type == 'section') {
-                    this.addSection(key, element);
-                } else {
-                    const properties = this.schema.properties[key.key];
-                    if (properties) {
-                        const fieldProperties = Object.assign({}, properties, key);
-                        this.addField(key.key, fieldProperties, null, element);
-                    } else {
-                        this.addField(key.key, key, null, element);
-                    }
+        form.forEach((formItem) => {
+            if (formItem) {
+                switch (formItem.type) {
+                case 'section':
+                    this.addSection(formItem, element);
+                    break;
+                case 'submit':
+                    this.addSubmit(formItem, element);
+                    break;
+                default:
+                    this.addField(formItem, null, element);
                 }
             }
         });
@@ -173,10 +146,9 @@ export class SchemaForm extends HTMLElement {
 
     buildForm() {
         if (this.form) {
-            this.buildFormSection(this.form, this.formElement);
+            this.buildFormSection(parseForm(this.form, this.schema), this.formElement);
         } else {
-            const keys = Object.keys(this.schema.properties);
-            this.buildFormSection(keys, this.formElement);
+            this.buildFormSection(parseSchema(this.schema), this.formElement);
             this.addSubmit({}, this.formElement);
             if (this.schema.dependencies) this.checkDependencies();
         }
@@ -192,25 +164,27 @@ export class SchemaForm extends HTMLElement {
         }
     }
 
-    submit(event) {
+    onSubmit(event) {
         event.preventDefault();
         const ajv = new Ajv();
         const valid = ajv.validate(this.schema, this.model);
         if (!valid) {
-            ajv.errors.forEach((error) => {
-                let key;
-                if (error.keyword == 'required') {
-                    key = error.params.missingProperty;
-                } else {
-                    key = error.dataPath.match(/\.(.*)/)[1];
-                }
-                this.fields.forEach((element) => {
-                    if (element.key == key) {
-                        element.error = error;
-                    }
-                });
-            });
+            ajv.errors.forEach(this.addError.bind(this));
         }
+    }
+
+    addError(error) {
+        let key;
+        if (error.keyword == 'required') {
+            key = error.params.missingProperty;
+        } else {
+            key = error.dataPath.match(/\.(.*)/)[1];
+        }
+        this.fields.forEach((element) => {
+            if (element.key == key) {
+                element.error = error;
+            }
+        });
     }
 
     get model() {
@@ -237,7 +211,7 @@ export class SchemaForm extends HTMLElement {
     addDependencies(key, dependency) {
         Object.keys(dependency.properties).forEach((newKey) => {
             if (!this.fields.some(field => field.key == newKey)) {
-                this.addField(newKey, dependency.properties[newKey], key);
+                this.addField(dependency.properties[newKey], key);
             }
         });
     }
