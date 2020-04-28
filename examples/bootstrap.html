@@ -42,6 +42,7 @@
               <option selected value="simple">Simple</option>
               <option value="title-map">TitleMap Examples</option>
               <option value="bootstrap-grid">Bootstrap Grid</option>
+              <option value="section">Sections</option>
             </select>
             <small class="form-text text-muted"></small>
             <div class="invalid-feedback"></div>
@@ -110,7 +111,7 @@
           var form = document.querySelector('form');
           form.addEventListener('change', function() {
             const schemaForm = document.querySelector('schema-form');
-            document.querySelector('code').innerHTML = JSON.stringify(schemaForm.model);
+            document.querySelector('code').innerHTML = JSON.stringify(schemaForm.model, null, '\t');
           });
         });
 

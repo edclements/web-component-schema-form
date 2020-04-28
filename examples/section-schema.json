@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "personal": {
+      "title": "Your details",
+      "type": "object",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "email": {
+          "title": "Email",
+          "type": "string",
+          "pattern": "^\\S+@\\S+$",
+          "description": "Email will be used for evil."
+        }
+      },
+      "required": ["name"]
+    },
+    "address": {
+      "title": "Address",
+      "type": "object",
+      "properties": {
+        "street": {
+          "title": "Street",
+          "type": "string"
+        },
+        "city": {
+          "title": "City",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

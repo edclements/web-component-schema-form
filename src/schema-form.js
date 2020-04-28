@@ -1,4 +1,5 @@
 import Ajv from 'ajv';
+import set from 'lodash/set';
 
 import './field.js';
 import './textarea.js';
@@ -7,6 +8,7 @@ import './checkboxes.js';
 import './radios.js';
 import './help.js';
 import './submit.js';
+import './fieldset.js';
 import {parseForm,parseSchema} from './parse.js';
 
 const template = document.createElement('template');
@@ -25,7 +27,8 @@ export class SchemaForm extends HTMLElement {
             'checkboxes': 'schema-form-checkboxes',
             'select': 'schema-form-select-field',
             'radios': 'schema-form-radios',
-            'help': 'schema-form-help'
+            'help': 'schema-form-help',
+            'fieldset': 'schema-form-fieldset'
         };
         this.fields = [];
     }
@@ -84,6 +87,9 @@ export class SchemaForm extends HTMLElement {
         }
         if (properties.htmlClass) formField.htmlClass = properties.htmlClass;
         if (properties.helpvalue) formField.innerHTML = properties.helpvalue;
+        if (properties.type == 'fieldset') {
+            this.buildFormSection(properties.items, formField, properties.key);
+        }
         this.fields.push(formField);
     }
 
@@ -189,7 +195,9 @@ export class SchemaForm extends HTMLElement {
 
     get model() {
         return this.fields.reduce((model, field) => {
-            if (field.value != '') model[field.key] = field.value;
+            if (field.value && field.value != '') {
+                set(model, field.key, field.value);
+            }
             return model;
         }, {});
     }

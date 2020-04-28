@@ -7,7 +7,8 @@
     "dist/schema-form.js"
   ],
   "dependencies": {
-    "ajv": "^6.12.0"
+    "ajv": "^6.12.0",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
