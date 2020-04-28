@@ -1,0 +1,58 @@
+[
+  "select",
+  {
+    "key": "noenum",
+    "type": "select",
+    "titleMap": [
+      {
+        "value": "a",
+        "name": "A"
+      },
+      {
+        "value": "b",
+        "name": "B"
+      },
+      {
+        "value": "c",
+        "name": "C"
+      }
+    ]
+  },
+  "array",
+  {
+    "key": "array2",
+    "type": "checkboxes",
+    "titleMap": [
+      {
+        "value": "a",
+        "name": "A"
+      },
+      {
+        "value": "b",
+        "name": "B"
+      },
+      {
+        "value": "c",
+        "name": "C"
+      }
+    ]
+  },
+  {
+    "key": "radios",
+    "type": "radios",
+    "titleMap": [
+      {
+        "value": "c",
+        "name": "C"
+      },
+      {
+        "value": "b",
+        "name": "B"
+      },
+      {
+        "value": "a",
+        "name": "A"
+      }
+    ]
+  }
+]
