@@ -9038,7 +9038,7 @@ function parseObjectProperties(key, properties) {
     key: key
   }, properties);
 
-  if (properties["enum"]) {
+  if (properties["enum"] || properties.titleMap) {
     formItem.type = 'select';
   } else if (properties.type == 'array' && properties.items["enum"]) {
     formItem.type = 'checkboxes';

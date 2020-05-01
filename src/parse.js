@@ -16,7 +16,7 @@ function parseObject(properties, namespace = null) {
 
 function parseObjectProperties(key, properties) {
     const formItem = Object.assign({}, {key: key}, properties);
-    if (properties.enum) {
+    if (properties.enum || properties.titleMap) {
         formItem.type = 'select';
     } else if (properties.type == 'array' && properties.items.enum) {
         formItem.type = 'checkboxes';
