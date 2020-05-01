@@ -9042,7 +9042,7 @@ function parseObjectProperties(key, properties) {
     formItem.type = 'select';
   } else if (properties.type == 'array' && properties.items["enum"]) {
     formItem.type = 'checkboxes';
-  } else if (properties.type == 'object' && properties.title && properties.properties) {
+  } else if (properties.type == 'object' && properties.properties) {
     formItem.type = 'fieldset';
     formItem.items = parseObject(properties.properties, key);
     delete formItem.properties;
