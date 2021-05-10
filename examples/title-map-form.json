@@ -54,5 +54,6 @@
         "name": "A"
       }
     ]
-  }
+  },
+  "oneof_select"
 ]

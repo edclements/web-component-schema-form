@@ -84,6 +84,8 @@ export class SchemaForm extends HTMLElement {
             formField.options = this.enumToTitleMap(properties.enum);
         } else if (properties.items && properties.items.enum) {
             formField.options = this.enumToTitleMap(properties.items.enum);
+        } else if (properties.options) {
+            formField.options = properties.options;
         }
         if (properties.htmlClass) formField.htmlClass = properties.htmlClass;
         if (properties.helpvalue) formField.innerHTML = properties.helpvalue;

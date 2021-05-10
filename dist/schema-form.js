@@ -9040,6 +9040,9 @@ function parseObjectProperties(key, properties) {
 
   if (properties["enum"] || properties.titleMap) {
     formItem.type = 'select';
+  } else if (hasOneOfConst(properties)) {
+    formItem.type = 'select';
+    formItem.options = oneOfToTitleMap(properties.oneOf);
   } else if (properties.type == 'array' && properties.items["enum"]) {
     formItem.type = 'checkboxes';
   } else if (properties.type == 'object' && properties.properties) {
@@ -9055,14 +9058,27 @@ function parseObjectProperties(key, properties) {
   return formItem;
 }
 
+function hasOneOfConst(properties) {
+  return properties.oneOf && properties.oneOf.filter(function (oneOf) {
+    return oneOf["const"];
+  }).length > 0;
+}
+
+function oneOfToTitleMap(oneOf) {
+  return oneOf.map(function (item) {
+    return {
+      value: item["const"],
+      name: item.description || item["const"]
+    };
+  });
+}
+
 var schemaToFormType = {
   string: 'text',
   object: 'fieldset'
 };
 
 function parseForm(form, schema) {
-  console.log('parse form', form, form == ['*']);
-
   if (form.length == 1 && form[0] == '*') {
     return parseSchema(schema);
   } else {
@@ -9359,6 +9375,8 @@ var SchemaForm = /*#__PURE__*/function (_HTMLElement) {
         formField.options = this.enumToTitleMap(properties["enum"]);
       } else if (properties.items && properties.items["enum"]) {
         formField.options = this.enumToTitleMap(properties.items["enum"]);
+      } else if (properties.options) {
+        formField.options = properties.options;
       }
 
       if (properties.htmlClass) formField.htmlClass = properties.htmlClass;

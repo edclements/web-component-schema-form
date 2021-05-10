@@ -50,6 +50,15 @@
         "b",
         "c"
       ]
+    },
+    "oneof_select": {
+      "title": "Select using oneOf for descriptions",
+      "type": "string",
+      "oneOf": [
+        {"const": "a", "description": "A"},
+        {"const": "b", "description": "B"},
+        {"const": "c", "description": "C"}
+      ]
     }
   }
 }

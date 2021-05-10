@@ -96,3 +96,32 @@ test('empty required field displays error', () => {
     expect(feedbackElement.innerHTML).toEqual('required');
 });
 
+test('oneOf displays select', () => {
+    const schemaForm = document.querySelector('schema-form');
+    schemaForm.schema = {
+        type: 'object',
+        properties: {
+            select: {
+                title: 'Select',
+                type: 'string',
+                oneOf: [
+                    {"const": "a", "description": "A"},
+                    {"const": "b", "description": "B"},
+                    {"const": "c", "description": "C"}
+                ]
+            }
+        }
+    };
+    const labelElement = document.querySelector('label');
+    expect(labelElement).toBeInstanceOf(HTMLLabelElement);
+    expect(labelElement.innerHTML).toEqual('Select');
+    const selectElement = document.querySelector('select');
+    expect(selectElement).toBeInstanceOf(HTMLSelectElement);
+    const optionElements = document.querySelectorAll('option');
+    expect(optionElements[0].innerHTML).toEqual('A');
+    expect(optionElements[1].innerHTML).toEqual('B');
+    expect(optionElements[2].innerHTML).toEqual('C');
+    expect(optionElements[0].getAttribute('value')).toEqual('a');
+    expect(optionElements[1].getAttribute('value')).toEqual('b');
+    expect(optionElements[2].getAttribute('value')).toEqual('c');
+});

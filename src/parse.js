@@ -18,6 +18,9 @@ function parseObjectProperties(key, properties) {
     const formItem = Object.assign({}, {key: key}, properties);
     if (properties.enum || properties.titleMap) {
         formItem.type = 'select';
+    } else if (hasOneOfConst(properties)) {
+        formItem.type = 'select';
+        formItem.options = oneOfToTitleMap(properties.oneOf);
     } else if (properties.type == 'array' && properties.items.enum) {
         formItem.type = 'checkboxes';
     } else if (properties.type == 'object' && properties.properties) {
@@ -32,13 +35,21 @@ function parseObjectProperties(key, properties) {
     return formItem;
 }
 
+function hasOneOfConst(properties) {
+    return properties.oneOf &&
+        properties.oneOf.filter(oneOf => oneOf.const).length > 0;
+}
+
+function oneOfToTitleMap(oneOf) {
+    return oneOf.map(item => ({value: item.const, name: item.description || item.const}));
+}
+
 const schemaToFormType = {
     string: 'text',
     object: 'fieldset'
 };
 
 export function parseForm(form, schema) {
-    console.log('parse form', form, form == ['*']);
     if (form.length == 1 && form[0] == '*') {
         return parseSchema(schema);
     } else {
