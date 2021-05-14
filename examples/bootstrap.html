@@ -58,41 +58,43 @@
     <script src="./ace.js"></script>
     <script type="module" src="../dist/schema-form.js"></script>
     <script>
-        let loaded = false;
-        const schemaEditor = ace.edit("schema-editor");
+        var loaded = false;
+        var schemaEditor = ace.edit("schema-editor");
         schemaEditor.setOptions({maxLines: 100});
         schemaEditor.session.setMode("ace/mode/json");
-        const formEditor = ace.edit("form-editor");
+        var formEditor = ace.edit("form-editor");
         formEditor.setOptions({maxLines: 100, minLines: 10});
         formEditor.session.setMode("ace/mode/json");
 
         function getSchemaAndForm(schemaURL, formURL) {
-          window.fetch(schemaURL)
-            .then(function(response) {
-              return response.json();
-            })
-            .then(function(schema) {
-              fetch(formURL)
-                .then(function(response) {
-                  return response.json();
-                })
-                .then(function(form) {
-                  schemaEditor.setValue(JSON.stringify(schema, null, '\t'));
-                  schemaEditor.clearSelection();
-                  formEditor.setValue(JSON.stringify(form, null, '\t'));
-                  formEditor.clearSelection();
-                  update();
-                });
-            });
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.onreadystatechange = function() {
+              if (this.readyState == 4 && this.status == 200) {
+                  var schema = JSON.parse(this.responseText);
+                  xmlhttp.onreadystatechange = function() {
+                      if (this.readyState == 4 && this.status == 200) {
+                          var form = JSON.parse(this.responseText);
+                          schemaEditor.setValue(JSON.stringify(schema, null, '\t'));
+                          schemaEditor.clearSelection();
+                          formEditor.setValue(JSON.stringify(form, null, '\t'));
+                          formEditor.clearSelection();
+                          update();
+                      }
+                  };
+                  xmlhttp.open("GET", formURL, true);
+                  xmlhttp.send();
+              }
+          };
+          xmlhttp.open("GET", schemaURL, true);
+          xmlhttp.send();
         }
-
 
         function update() {
           if (!loaded) return;
-          const schemaForm = document.querySelector('schema-form');
+          var schemaForm = document.querySelector('schema-form');
           try {
-            const schema = schemaEditor.getSession().getValue();
-            const form = formEditor.getSession().getValue();
+            var schema = schemaEditor.getSession().getValue();
+            var form = formEditor.getSession().getValue();
             if (schema != "" && form != "") {
               schemaForm.schema = JSON.parse(schema);
               schemaForm.form = JSON.parse(form);
@@ -110,14 +112,14 @@
           update();
           var form = document.querySelector('form');
           form.addEventListener('change', function() {
-            const schemaForm = document.querySelector('schema-form');
+            var schemaForm = document.querySelector('schema-form');
             document.querySelector('code').innerHTML = JSON.stringify(schemaForm.model, null, '\t');
           });
         });
 
         document.querySelector('#select-examples').addEventListener('change', function(event) {
-          const schemaURL = "./" + event.target.value + "-schema.json";
-          const formURL = "./" + event.target.value + "-form.json";
+          var schemaURL = "./" + event.target.value + "-schema.json";
+          var formURL = "./" + event.target.value + "-form.json";
           getSchemaAndForm(schemaURL, formURL);
         });
     </script>
@@ -139,7 +141,5 @@
 
     <!-- Add support for Web Components to older browsers. -->
     <script src="webcomponents-loader.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.6.2/fetch.min.js" integrity="sha512-1Gn7//DzfuF67BGkg97Oc6jPN6hqxuZXnaTpC9P5uw8C6W4yUNj5hoS/APga4g1nO2X6USBb/rXtGzADdaVDeA==" crossorigin="anonymous"></script>
   </body>
 </html>
