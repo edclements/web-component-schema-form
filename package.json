@@ -11,19 +11,24 @@
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "eslint": "^6.8.0",
-    "http-server": "^0.12.1",
     "@babel/preset-env": "^7.9.5",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
     "babelify": "^10.0.0",
     "browserify": "^16.5.1",
+    "eslint": "^6.8.0",
+    "http-server": "^0.12.1",
     "jest": "^25.3.0",
     "jest-environment-jsdom-sixteen": "^1.0.3",
-    "watchify": "^3.11.1",
-    "wzrd": "^1.5.0"
+    "rollup": "^2.47.0",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-serve": "^1.1.0"
   },
   "scripts": {
-    "build": "browserify src/schema-form.js -o dist/schema-form.js -t [ babelify --presets [ @babel/preset-env ] ]",
-    "watch": "wzrd src/schema-form.js -- -t [ babelify --presets [ @babel/preset-env ] ]",
+    "build": "rollup --config",
+    "watch": "rollup --config --watch -p serve -p livereload",
     "test": "NODE_ENV=test jest"
   },
   "author": "Ed Clements",
