@@ -65,10 +65,9 @@
         const formEditor = ace.edit("form-editor");
         formEditor.setOptions({maxLines: 100, minLines: 10});
         formEditor.session.setMode("ace/mode/json");
-        const fetch = fetch || window.fetch;
 
         function getSchemaAndForm(schemaURL, formURL) {
-          fetch(schemaURL)
+          window.fetch(schemaURL)
             .then(function(response) {
               return response.json();
             })
