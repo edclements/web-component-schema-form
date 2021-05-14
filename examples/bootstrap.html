@@ -68,15 +68,15 @@
 
         function getSchemaAndForm(schemaURL, formURL) {
           fetch(schemaURL)
-            .then((response) => {
+            .then(function(response) {
               return response.json();
             })
-            .then((schema) => {
+            .then(function(schema) {
               fetch(formURL)
-                .then((response) => {
+                .then(function(response) {
                   return response.json();
                 })
-                .then((form) => {
+                .then(function(form) {
                   schemaEditor.setValue(JSON.stringify(schema, null, '\t'));
                   schemaEditor.clearSelection();
                   formEditor.setValue(JSON.stringify(form, null, '\t'));
@@ -115,7 +115,7 @@
           });
         });
 
-        document.querySelector('#select-examples').addEventListener('change', (event) => {
+        document.querySelector('#select-examples').addEventListener('change', function(event) {
           const schemaURL = `./${event.target.value}-schema.json`;
           const formURL = `./${event.target.value}-form.json`;
           getSchemaAndForm(schemaURL, formURL);
