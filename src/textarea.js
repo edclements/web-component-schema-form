@@ -16,11 +16,8 @@ export class SchemaFormTextArea extends SchemaFormField {
         const node = document.importNode(template.content, true);
         this.appendChild(node);
         this.textareaElement = this.querySelector('textarea');
-        this.textareaElement.addEventListener('input', this.onChange.bind(this));
-    }
-
-    onChange(event) {
-        this.value = event.target.value;
+        this.textareaElement.addEventListener('input', this.onInput.bind(this));
+        this.inputElement = this.textareaElement;
     }
 
     get key() {
