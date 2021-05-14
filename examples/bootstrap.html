@@ -116,8 +116,8 @@
         });
 
         document.querySelector('#select-examples').addEventListener('change', function(event) {
-          const schemaURL = `./${event.target.value}-schema.json`;
-          const formURL = `./${event.target.value}-form.json`;
+          const schemaURL = "./" + event.target.value + "-schema.json";
+          const formURL = "./" + event.target.value + "-form.json";
           getSchemaAndForm(schemaURL, formURL);
         });
     </script>
