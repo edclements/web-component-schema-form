@@ -1,7 +1,9 @@
 {
   "presets": [
     [ "@babel/preset-env", {
-      "targets": { "node": "10", "chrome": "88", "ie": "11" }
+      "targets": "> 0.25%, not dead",
+      "useBuiltIns": "usage",
+      "corejs": 3
     } ]
   ],
   "env": {
