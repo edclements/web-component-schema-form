@@ -25,6 +25,8 @@
     </style>
   </head>
   <body>
+    <script src="webcomponents-bundle.js"></script>
+    <script src="../dist/schema-form.js"></script>
     <div class="flex-container">
       <div class="row">
         <div class="col-md">
@@ -56,43 +58,44 @@
     </div>
 
     <script src="./ace.js"></script>
-    <script type="module" src="../dist/schema-form.js"></script>
     <script>
-        let loaded = false;
-        const schemaEditor = ace.edit("schema-editor");
+        var loaded = false;
+        var schemaEditor = ace.edit("schema-editor");
         schemaEditor.setOptions({maxLines: 100});
         schemaEditor.session.setMode("ace/mode/json");
-        const formEditor = ace.edit("form-editor");
+        var formEditor = ace.edit("form-editor");
         formEditor.setOptions({maxLines: 100, minLines: 10});
         formEditor.session.setMode("ace/mode/json");
 
         function getSchemaAndForm(schemaURL, formURL) {
-          fetch(schemaURL)
-            .then((response) => {
-              return response.json();
-            })
-            .then((schema) => {
-              fetch(formURL)
-                .then((response) => {
-                  return response.json();
-                })
-                .then((form) => {
-                  schemaEditor.setValue(JSON.stringify(schema, null, '\t'));
-                  schemaEditor.clearSelection();
-                  formEditor.setValue(JSON.stringify(form, null, '\t'));
-                  formEditor.clearSelection();
-                  update();
-                });
-            });
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.onreadystatechange = function() {
+              if (this.readyState == 4 && this.status == 200) {
+                  var schema = JSON.parse(this.responseText);
+                  xmlhttp.onreadystatechange = function() {
+                      if (this.readyState == 4 && this.status == 200) {
+                          var form = JSON.parse(this.responseText);
+                          schemaEditor.setValue(JSON.stringify(schema, null, '\t'));
+                          schemaEditor.clearSelection();
+                          formEditor.setValue(JSON.stringify(form, null, '\t'));
+                          formEditor.clearSelection();
+                          update();
+                      }
+                  };
+                  xmlhttp.open("GET", formURL, true);
+                  xmlhttp.send();
+              }
+          };
+          xmlhttp.open("GET", schemaURL, true);
+          xmlhttp.send();
         }
-
 
         function update() {
           if (!loaded) return;
-          const schemaForm = document.querySelector('schema-form');
+          var schemaForm = document.querySelector('schema-form');
           try {
-            const schema = schemaEditor.getSession().getValue();
-            const form = formEditor.getSession().getValue();
+            var schema = schemaEditor.getSession().getValue();
+            var form = formEditor.getSession().getValue();
             if (schema != "" && form != "") {
               schemaForm.schema = JSON.parse(schema);
               schemaForm.form = JSON.parse(form);
@@ -105,19 +108,19 @@
         getSchemaAndForm('./simple-schema.json', './simple-form.json');
         schemaEditor.getSession().on('change', update);
         formEditor.getSession().on('change', update);
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("WebComponentsReady", function() {
           loaded = true;
           update();
           var form = document.querySelector('form');
           form.addEventListener('change', function() {
-            const schemaForm = document.querySelector('schema-form');
+            var schemaForm = document.querySelector('schema-form');
             document.querySelector('code').innerHTML = JSON.stringify(schemaForm.model, null, '\t');
           });
         });
 
-        document.querySelector('#select-examples').addEventListener('change', (event) => {
-          const schemaURL = `./${event.target.value}-schema.json`;
-          const formURL = `./${event.target.value}-form.json`;
+        document.querySelector('#select-examples').addEventListener('change', function(event) {
+          var schemaURL = "./" + event.target.value + "-schema.json";
+          var formURL = "./" + event.target.value + "-form.json";
           getSchemaAndForm(schemaURL, formURL);
         });
     </script>
